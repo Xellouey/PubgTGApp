@@ -129,7 +129,6 @@ tg.expand();
 
 // Константы
 let ADMIN_PASSWORD = localStorage.getItem('admin_password') || 'admin123'; // Пароль админа
-const STORAGE_KEY = 'pubg_products';
 
 // GitHub API настройки
 const GITHUB_OWNER = 'Xellouey';
@@ -232,21 +231,17 @@ window.handleAdminClick = function() {
 // Загрузка товаров из GitHub
 async function loadProducts() {
     try {
-        showToast('📥 Загружаем...', 'info');
-        
         // Сначала пробуем публичное чтение
         let response = await fetch(GITHUB_API_URL);
         
         // Если не получилось и есть токен, пробуем с токеном
         const token = getGitHubToken();
         if ((response.status === 403 || response.status === 401) && token) {
-            console.log('Пробуем с токеном после 403...', token.substring(0, 15) + '...');
             response = await fetch(GITHUB_API_URL, {
                 headers: {
                     'Authorization': `token ${token}`
                 }
             });
-            console.log('Результат с токеном:', response.status, response.statusText);
         }
         
         if (response.ok) {
@@ -257,38 +252,15 @@ async function loadProducts() {
             const base64Content = data.content.replace(/\n/g, '');
             const decodedContent = decodeURIComponent(escape(atob(base64Content)));
             const content = JSON.parse(decodedContent);
-            const githubProducts = content.products || [];
-            
-            // Проверяем локальные данные
-            const localProducts = localStorage.getItem(STORAGE_KEY);
-            const localBackup = localStorage.getItem('products_backup');
-            
-            if (localProducts && localBackup) {
-                const localData = JSON.parse(localBackup);
-                const githubTime = new Date(content.lastUpdated || 0).getTime();
-                const localTime = new Date(localData.lastUpdated || 0).getTime();
-                
-                // Если локальные данные новее, используем их
-                if (localTime > githubTime) {
-                    products = JSON.parse(localProducts);
-                } else {
-                    products = githubProducts;
-                }
-            } else {
-                products = githubProducts;
-            }
+            products = content.products || [];
         } else if (response.status === 404) {
             githubSha = null;
             products = [];
         } else {
-            // Fallback к localStorage
-            const saved = localStorage.getItem(STORAGE_KEY);
-            products = saved ? JSON.parse(saved) : [];
+            products = [];
         }
     } catch (error) {
-        // Fallback к localStorage
-        const saved = localStorage.getItem(STORAGE_KEY);
-        products = saved ? JSON.parse(saved) : [];
+        products = [];
     }
     
     renderProducts();
@@ -306,19 +278,14 @@ async function saveProducts() {
             lastUpdated: new Date().toISOString()
         };
         
-        // Сохраняем также в localStorage как backup
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-        localStorage.setItem('products_backup', JSON.stringify(content));
-        
         // Проверяем наличие токена
         const token = getGitHubToken();
         if (!token) {
-            // Если нет токена, сохраняем только локально
-            showToast('💾 Сохранено локально', 'info');
+            showToast('⚠️ Настройте GitHub токен', 'error');
             return;
         }
         
-        // Получаем актуальный SHA перед сохранением
+        // Получаем актуальный SHA перед сохранением для избежания 409 конфликтов
         try {
             const getResponse = await fetch(GITHUB_API_URL, {
                 headers: {
@@ -329,11 +296,14 @@ async function saveProducts() {
             if (getResponse.ok) {
                 const fileData = await getResponse.json();
                 githubSha = fileData.sha;
+            } else if (getResponse.status === 404) {
+                githubSha = null; // Файл не существует
             } else {
-                githubSha = null;
+                throw new Error(`Ошибка получения файла: ${getResponse.status}`);
             }
         } catch (error) {
-            githubSha = null;
+            showToast('❌ Ошибка получения актуальной версии файла', 'error');
+            return;
         }
         
         // Подготавливаем данные для GitHub
@@ -366,6 +336,10 @@ async function saveProducts() {
                 const result = await response.json();
                 githubSha = result.content.sha; // Обновляем SHA для следующего обновления
                 showToast('✅ Синхронизировано', 'success');
+            } else if (response.status === 409) {
+                showToast('⚠️ Конфликт версий. Обновите данные и попробуйте снова', 'error');
+                // Автоматически обновляем данные при конфликте
+                await loadProducts();
             } else {
                 const error = await response.json().catch(() => ({ message: 'Неизвестная ошибка' }));
                 showToast(`❌ Ошибка: ${error.message}`, 'error');
@@ -525,7 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.backgroundColor = '#1a1a1a';
     document.body.style.color = '#ffffff';
     
-    // Загружаем товары при старте (без тостов)
+    // Загружаем товары при старте
     loadProducts();
 
     // Авторизация админа
