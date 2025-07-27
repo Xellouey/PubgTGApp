@@ -89,6 +89,12 @@
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
     
+    <!-- Fullscreen Image Overlay -->
+    <div id="fullscreen-overlay" class="fullscreen-overlay">
+        <img id="fullscreen-image" class="fullscreen-image" src="" alt="">
+        <button id="fullscreen-close" class="fullscreen-close">✕</button>
+    </div>
+    
     <script>
 // Инициализация Telegram Web App
 const tg = window.Telegram.WebApp;
@@ -193,8 +199,15 @@ function renderProducts() {
         productCard.className = 'product-card';
         productCard.style.animationDelay = `${index * 0.1}s`;
         
+        const imageHtml = product.image ? 
+            `<div class="product-image-container">
+                <img src="${product.image}" alt="${product.name}" class="product-image" onclick="openFullscreen('${product.image}', '${product.name}')">
+                <button class="fullscreen-icon" onclick="openFullscreen('${product.image}', '${product.name}')" title="Открыть в полном размере">⛶</button>
+            </div>` : 
+            '<div class="product-image"></div>';
+        
         productCard.innerHTML = `
-            ${product.image ? `<img src="${product.image}" alt="${product.name}" class="product-image">` : '<div class="product-image"></div>'}
+            ${imageHtml}
             <div class="product-info">
                 <div class="product-name">${product.name}</div>
                 <div class="product-price">${product.price} ₽</div>
@@ -251,6 +264,29 @@ function openModal(modal) {
 
 function closeModal(modal) {
     modal.style.display = 'none';
+}
+
+// Полноэкранный просмотр изображений
+window.openFullscreen = function(imageSrc, altText) {
+    const overlay = document.getElementById('fullscreen-overlay');
+    const image = document.getElementById('fullscreen-image');
+    
+    image.src = imageSrc;
+    image.alt = altText;
+    overlay.style.display = 'flex';
+    
+    // Блокируем скролл страницы
+    document.body.style.overflow = 'hidden';
+    
+    showToast('🔍 Изображение открыто в полном размере', 'info', 2000);
+}
+
+window.closeFullscreen = function() {
+    const overlay = document.getElementById('fullscreen-overlay');
+    overlay.style.display = 'none';
+    
+    // Восстанавливаем скролл страницы
+    document.body.style.overflow = 'auto';
 }
 
 // Инициализация приложения
@@ -499,6 +535,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
         if (!adminContextMenu.contains(e.target) && !adminBtn.contains(e.target)) {
             adminContextMenu.classList.add('hidden');
+        }
+    });
+
+    // Обработчики полноэкранного просмотра
+    const fullscreenOverlay = document.getElementById('fullscreen-overlay');
+    const fullscreenClose = document.getElementById('fullscreen-close');
+    
+    // Закрытие по кнопке
+    fullscreenClose.addEventListener('click', closeFullscreen);
+    
+    // Закрытие по клику на фон
+    fullscreenOverlay.addEventListener('click', (e) => {
+        if (e.target === fullscreenOverlay) {
+            closeFullscreen();
+        }
+    });
+    
+    // Закрытие по клавише Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && fullscreenOverlay.style.display === 'flex') {
+            closeFullscreen();
         }
     });
 });
