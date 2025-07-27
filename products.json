@@ -6,7 +6,35 @@
       "price": 13,
       "description": "ad",
       "image": null
+    },
+    {
+      "id": 1753620908904,
+      "name": "проверка",
+      "price": 123,
+      "description": "123",
+      "image": null
+    },
+    {
+      "id": 1753622301445,
+      "name": "123",
+      "price": 1231,
+      "description": "233131",
+      "image": null
+    },
+    {
+      "id": 1753622497860,
+      "name": "123",
+      "price": 123131,
+      "description": "3131",
+      "image": null
+    },
+    {
+      "id": 1753622917628,
+      "name": "хер",
+      "price": 123,
+      "description": "херрррр",
+      "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T12:33:00.344Z"
+  "lastUpdated": "2025-07-27T13:28:38.432Z"
 }
