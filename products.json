@@ -1,4 +1,12 @@
 {
-  "products": [],
-  "lastUpdated": null
+  "products": [
+    {
+      "id": 1753619579538,
+      "name": "ada",
+      "price": 13,
+      "description": "ad",
+      "image": null
+    }
+  ],
+  "lastUpdated": "2025-07-27T12:33:00.344Z"
 }
