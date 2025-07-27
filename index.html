@@ -235,20 +235,37 @@ window.handleAdminClick = function() {
 // Загрузка товаров из GitHub
 async function loadProducts() {
     console.log('🔄 Начинаем загрузку товаров...');
+    console.log('📱 Платформа:', tg.platform);
+    console.log('🌐 User Agent:', navigator.userAgent);
     
     try {
         // Сначала пробуем публичное чтение
         console.log('📡 Запрос к GitHub API:', GITHUB_API_URL);
-        let response = await fetch(GITHUB_API_URL);
+        
+        // Добавляем cache-busting для Telegram Desktop
+        const cacheBuster = `?t=${Date.now()}`;
+        const apiUrlWithCache = GITHUB_API_URL + cacheBuster;
+        console.log('🔄 URL с cache-buster:', apiUrlWithCache);
+        
+        let response = await fetch(apiUrlWithCache, {
+            cache: 'no-cache',
+            headers: {
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        });
         console.log('📡 Ответ GitHub API:', response.status, response.statusText);
         
         // Если не получилось и есть токен, пробуем с токеном
         const token = getGitHubToken();
         if ((response.status === 403 || response.status === 401 || response.status === 404) && token) {
             console.log('🔑 Пробуем с токеном, статус:', response.status);
-            response = await fetch(GITHUB_API_URL, {
+            response = await fetch(apiUrlWithCache, {
+                cache: 'no-cache',
                 headers: {
-                    'Authorization': `token ${token}`
+                    'Authorization': `token ${token}`,
+                    'Cache-Control': 'no-cache',
+                    'Pragma': 'no-cache'
                 }
             });
             console.log('🔑 Ответ с токеном:', response.status, response.statusText);
@@ -399,9 +416,15 @@ function renderProducts() {
     }
 
     // Очищаем контейнер
+    console.log('🧹 Очищаем контейнер товаров');
+    if (!productsContainer) {
+        console.error('❌ productsContainer не найден!');
+        return;
+    }
     productsContainer.innerHTML = '';
     
     // Добавляем товары с анимацией
+    console.log('🎨 Начинаем рендерить товары...');
     products.forEach((product, index) => {
         const productCard = document.createElement('div');
         productCard.className = 'product-card';
@@ -428,7 +451,10 @@ function renderProducts() {
         `;
         
         productsContainer.appendChild(productCard);
+        console.log(`✅ Товар ${index + 1} добавлен:`, product.name);
     });
+    
+    console.log('🎯 Рендеринг завершен, товаров в DOM:', productsContainer.children.length);
 }
 
 // Покупка товара
@@ -501,6 +527,7 @@ window.closeFullscreen = function() {
 document.addEventListener('DOMContentLoaded', () => {
     // Инициализация DOM элементов
     productsContainer = document.getElementById('products-container');
+    console.log('🎯 productsContainer найден:', !!productsContainer);
     adminBtn = document.getElementById('admin-btn');
     adminAuthModal = document.getElementById('admin-auth-modal');
     addProductModal = document.getElementById('add-product-modal');
@@ -600,6 +627,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Кнопка обновления товаров (доступна всем)
     const refreshProductsBtn = document.getElementById('refresh-products-btn');
     refreshProductsBtn.addEventListener('click', async () => {
+        console.log('🔄 Принудительное обновление товаров...');
+        // Очищаем кэш
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map(name => caches.delete(name)));
+            console.log('🗑️ Кэш очищен');
+        }
         await loadProducts();
         showToast('🔄 Обновлено', 'success');
     });
