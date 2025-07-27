@@ -444,24 +444,9 @@ function renderProducts() {
         `;
         
         productsContainer.appendChild(productCard);
-        console.log(`✅ Товар ${index + 1} добавлен:`, product.name);
-        
-        // Проверяем видимость для отладки
-        const rect = productCard.getBoundingClientRect();
-        console.log(`📐 Товар ${index + 1} размеры:`, rect.width, 'x', rect.height);
     });
     
     console.log('🎯 Рендеринг завершен, товаров в DOM:', productsContainer.children.length);
-    
-    // Принудительное обновление для Telegram Desktop
-    if (tg.platform === 'unknown' || navigator.userAgent.includes('Chrome')) {
-        console.log('🔄 Принудительное обновление DOM для Telegram Desktop');
-        productsContainer.style.display = 'none';
-        setTimeout(() => {
-            productsContainer.style.display = '';
-            console.log('✅ DOM обновлен');
-        }, 10);
-    }
 }
 
 // Покупка товара
@@ -562,27 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.backgroundColor = '#1a1a1a';
     document.body.style.color = '#ffffff';
     
-    // Принудительные стили для Telegram Desktop
-    if (tg.platform === 'unknown' || navigator.userAgent.includes('Chrome')) {
-        console.log('🎨 Применяем стили для Telegram Desktop');
-        const style = document.createElement('style');
-        style.textContent = `
-            .products-container {
-                display: flex !important;
-                flex-direction: column !important;
-                gap: 16px !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-            }
-            .product-card {
-                display: flex !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                min-height: 100px !important;
-            }
-        `;
-        document.head.appendChild(style);
-    }
+
     
     // Загружаем товары при старте
     loadProducts();
