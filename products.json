@@ -1,13 +1,6 @@
 {
   "products": [
     {
-      "id": 1753622301445,
-      "name": "123",
-      "price": 1231,
-      "description": "233131",
-      "image": null
-    },
-    {
       "id": 1753622497860,
       "name": "123",
       "price": 123131,
@@ -22,5 +15,5 @@
       "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T13:28:44.714Z"
+  "lastUpdated": "2025-07-27T13:28:45.985Z"
 }
