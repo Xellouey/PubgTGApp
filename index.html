@@ -248,11 +248,7 @@ async function loadProducts() {
         console.log('🔄 URL с cache-buster:', apiUrlWithCache);
         
         let response = await fetch(apiUrlWithCache, {
-            cache: 'no-cache',
-            headers: {
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
+            cache: 'no-cache'
         });
         console.log('📡 Ответ GitHub API:', response.status, response.statusText);
         
@@ -263,9 +259,7 @@ async function loadProducts() {
             response = await fetch(apiUrlWithCache, {
                 cache: 'no-cache',
                 headers: {
-                    'Authorization': `token ${token}`,
-                    'Cache-Control': 'no-cache',
-                    'Pragma': 'no-cache'
+                    'Authorization': `token ${token}`
                 }
             });
             console.log('🔑 Ответ с токеном:', response.status, response.statusText);
