@@ -20,7 +20,14 @@
       "price": 13,
       "description": "йувйуц",
       "image": null
+    },
+    {
+      "id": 1753624406389,
+      "name": "хуй",
+      "price": 123,
+      "description": "хуй",
+      "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T13:41:55.201Z"
+  "lastUpdated": "2025-07-27T13:53:27.190Z"
 }
