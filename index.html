@@ -149,32 +149,49 @@ let adminPassword, authSubmit, addProductBtn, logoutBtn, productForm;
 let imagePreview, productImage;
 
 // Функция для показа уведомлений
-function showToast(message, type = 'info', duration = 3000) {
+function showToast(message, type = 'info', duration = 2000) {
     const toastContainer = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
     toast.textContent = message;
     
-    toastContainer.appendChild(toast);
+    // Добавляем в начало контейнера (снизу)
+    toastContainer.insertBefore(toast, toastContainer.firstChild);
+    
+    // Ограничиваем количество toast до 3
+    const toasts = toastContainer.querySelectorAll('.toast');
+    if (toasts.length > 3) {
+        const oldestToast = toasts[toasts.length - 1];
+        oldestToast.classList.add('removing');
+        setTimeout(() => {
+            if (oldestToast.parentNode) {
+                oldestToast.parentNode.removeChild(oldestToast);
+            }
+        }, 300);
+    }
     
     // Автоматическое удаление через заданное время
     setTimeout(() => {
-        toast.classList.add('removing');
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
+        if (toast.parentNode) {
+            toast.classList.add('removing');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
     }, duration);
     
     // Удаление по клику
     toast.addEventListener('click', () => {
-        toast.classList.add('removing');
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 300);
+        if (toast.parentNode) {
+            toast.classList.add('removing');
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }
     });
 }
 
@@ -198,7 +215,7 @@ window.handleAdminClick = function() {
 // Загрузка товаров из GitHub
 async function loadProducts() {
     try {
-        showToast('📥 Загружаем товары...', 'info', 2000);
+        showToast('📥 Загружаем...', 'info');
         
         // Сначала пробуем без токена (публичное чтение)
         let response = await fetch(GITHUB_API_URL);
@@ -220,19 +237,19 @@ async function loadProducts() {
             const content = JSON.parse(atob(data.content.replace(/\n/g, '')));
             products = content.products || [];
             
-            showToast('✅ Товары загружены', 'success', 2000);
+            showToast('✅ Загружено', 'success');
         } else if (response.status === 404) {
             githubSha = null;
             products = [];
-            showToast('📝 Файл товаров будет создан', 'info', 2000);
+            showToast('📝 Создаем каталог', 'info');
         } else {
             // Fallback к localStorage
             const saved = localStorage.getItem(STORAGE_KEY);
             products = saved ? JSON.parse(saved) : [];
-            showToast('⚠️ Используем локальные данные', 'error', 3000);
+            showToast('⚠️ Локальные данные', 'error');
         }
     } catch (error) {
-        showToast('❌ Ошибка загрузки товаров', 'error', 3000);
+        showToast('❌ Ошибка загрузки', 'error');
         
         // Fallback к localStorage
         const saved = localStorage.getItem(STORAGE_KEY);
@@ -250,7 +267,7 @@ async function saveProducts() {
     }
     
     try {
-        showToast('💾 Сохраняем в GitHub...', 'info', 3000);
+        showToast('💾 Сохраняем...', 'info');
         
         const content = {
             products: products,
@@ -263,8 +280,7 @@ async function saveProducts() {
         
         // Проверяем наличие токена
         if (!GITHUB_TOKEN) {
-            showToast('⚠️ Настройте GitHub токен в админ-панели', 'error', 4000);
-            console.log('GitHub токен не настроен');
+            showToast('⚠️ Настройте GitHub токен', 'error');
             return;
         }
         
@@ -307,10 +323,15 @@ async function saveProducts() {
         if (response.ok) {
             const result = await response.json();
             githubSha = result.content.sha; // Обновляем SHA для следующего обновления
-            showToast('✅ Товары синхронизированы с GitHub!', 'success', 3000);
+            showToast('✅ Товары синхронизированы!', 'success');
+            
+            // Принудительно обновляем данные у всех пользователей
+            setTimeout(() => {
+                loadProducts();
+            }, 1000);
         } else {
             const error = await response.json();
-            showToast(`❌ Ошибка GitHub: ${error.message || 'Неизвестная ошибка'}`, 'error', 5000);
+            showToast(`❌ Ошибка: ${error.message || 'Неизвестная ошибка'}`, 'error');
         }
         
     } catch (error) {
@@ -385,16 +406,15 @@ function buyProduct(productId) {
 }
 
 // Удаление товара (только для админа)
-function deleteProduct(productId) {
+async function deleteProduct(productId) {
     if (!isAdmin) return;
     
     const product = products.find(p => p.id === productId);
     const productName = product ? product.name : 'товар';
     
     products = products.filter(p => p.id !== productId);
-    saveProducts();
-    renderProducts();
-    showToast(`🗑️ "${productName}" удален`, 'info', 2000);
+    await saveProducts();
+    showToast(`🗑️ "${productName}" удален`, 'info');
 }
 
 // Модальные окна
@@ -463,13 +483,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Загружаем товары при старте
     loadProducts();
-    
-    // Периодически проверяем обновления (каждые 30 секунд)
-    setInterval(async () => {
-        if (!isAdmin) { // Только для обычных пользователей
-            await loadProducts();
-        }
-    }, 30000);
 
     // Авторизация админа
     if (adminBtn) {
