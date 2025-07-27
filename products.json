@@ -8,13 +8,6 @@
       "image": null
     },
     {
-      "id": 1753622917628,
-      "name": "хер",
-      "price": 123,
-      "description": "херрррр",
-      "image": null
-    },
-    {
       "id": 1753623692741,
       "name": "йцуйу",
       "price": 13,
@@ -43,5 +36,5 @@
       "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T14:22:24.513Z"
+  "lastUpdated": "2025-07-27T14:22:27.799Z"
 }
