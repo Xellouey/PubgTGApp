@@ -1,13 +1,6 @@
 {
   "products": [
     {
-      "id": 1753619579538,
-      "name": "ada",
-      "price": 13,
-      "description": "ad",
-      "image": null
-    },
-    {
       "id": 1753620908904,
       "name": "проверка",
       "price": 123,
@@ -36,5 +29,5 @@
       "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T13:28:38.432Z"
+  "lastUpdated": "2025-07-27T13:28:41.630Z"
 }
