@@ -90,6 +90,7 @@
         <!-- Админ панель -->
         <div id="admin-panel" class="admin-panel">
             <button id="add-product-btn" class="btn">+ Добавить товар</button>
+            <button id="sync-products-btn" class="btn btn-secondary">🔄 Синхронизировать</button>
             <button id="logout-btn" class="btn btn-secondary">Выйти</button>
         </div>
         
@@ -236,9 +237,29 @@ async function loadProducts() {
             
             // Декодируем содержимое из base64
             const content = JSON.parse(atob(data.content.replace(/\n/g, '')));
-            products = content.products || [];
+            const githubProducts = content.products || [];
             
-            showToast('✅ Загружено', 'success');
+            // Проверяем локальные данные
+            const localProducts = localStorage.getItem(STORAGE_KEY);
+            const localBackup = localStorage.getItem('products_backup');
+            
+            if (localProducts && localBackup) {
+                const localData = JSON.parse(localBackup);
+                const githubTime = new Date(content.lastUpdated || 0).getTime();
+                const localTime = new Date(localData.lastUpdated || 0).getTime();
+                
+                // Если локальные данные новее, используем их
+                if (localTime > githubTime) {
+                    products = JSON.parse(localProducts);
+                    showToast('📱 Локальные данные новее', 'info');
+                } else {
+                    products = githubProducts;
+                    showToast('✅ Загружено из GitHub', 'success');
+                }
+            } else {
+                products = githubProducts;
+                showToast('✅ Загружено', 'success');
+            }
         } else if (response.status === 404) {
             githubSha = null;
             products = [];
@@ -305,7 +326,10 @@ async function saveProducts() {
         
         // Проверяем наличие токена
         if (!GITHUB_TOKEN) {
-            showToast('⚠️ Настройте GitHub токен', 'error');
+            // Если нет токена, сохраняем только локально
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+            localStorage.setItem('products_backup', JSON.stringify(content));
+            showToast('💾 Сохранено локально', 'info');
             return;
         }
         
@@ -350,10 +374,8 @@ async function saveProducts() {
             githubSha = result.content.sha; // Обновляем SHA для следующего обновления
             showToast('✅ Товары синхронизированы!', 'success');
             
-            // Принудительно обновляем данные у всех пользователей
-            setTimeout(() => {
-                loadProducts();
-            }, 1000);
+            // НЕ перезагружаем данные сразу - товары уже отображены корректно
+            // Пользователи получат обновления при следующем обновлении
         } else {
             const error = await response.json();
             showToast(`❌ Ошибка: ${error.message || 'Неизвестная ошибка'}`, 'error');
@@ -438,6 +460,7 @@ async function deleteProduct(productId) {
     const productName = product ? product.name : 'товар';
     
     products = products.filter(p => p.id !== productId);
+    renderProducts(); // Сразу обновляем отображение
     await saveProducts();
     showToast(`🗑️ "${productName}" удален`, 'info');
 }
@@ -555,6 +578,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     addProductBtn.addEventListener('click', () => {
         openModal(addProductModal);
+    });
+
+    // Кнопка синхронизации для админов
+    const syncProductsBtn = document.getElementById('sync-products-btn');
+    syncProductsBtn.addEventListener('click', async () => {
+        if (!GITHUB_TOKEN) {
+            showToast('⚠️ Настройте GitHub токен', 'error');
+            return;
+        }
+        
+        showToast('🔄 Синхронизируем с GitHub...', 'info');
+        
+        // Принудительно сохраняем текущие данные в GitHub
+        const content = {
+            products: products,
+            lastUpdated: new Date().toISOString()
+        };
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+        localStorage.setItem('products_backup', JSON.stringify(content));
+        
+        await saveProducts();
     });
 
     // Кнопка обновления товаров (доступна всем)
