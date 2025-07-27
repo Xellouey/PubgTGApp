@@ -214,17 +214,13 @@ async function loadProducts() {
     try {
         showToast('📥 Загружаем...', 'info');
         
-        // Сначала пробуем без токена (публичное чтение)
-        let response = await fetch(GITHUB_API_URL);
-        
-        // Если 403, пробуем с токеном
-        if (response.status === 403 && GITHUB_TOKEN) {
-            response = await fetch(GITHUB_API_URL, {
-                headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`
-                }
-            });
+        // Используем токен если он есть, иначе пробуем без токена
+        const headers = {};
+        if (GITHUB_TOKEN) {
+            headers['Authorization'] = `token ${GITHUB_TOKEN}`;
         }
+        
+        let response = await fetch(GITHUB_API_URL, { headers });
         
         if (response.ok) {
             const data = await response.json();
@@ -239,11 +235,20 @@ async function loadProducts() {
             githubSha = null;
             products = [];
             showToast('📝 Создаем каталог', 'info');
-        } else {
-            // Fallback к localStorage
+        } else if (response.status === 401 || response.status === 403) {
+            // Проблема с токеном
             const saved = localStorage.getItem(STORAGE_KEY);
             products = saved ? JSON.parse(saved) : [];
-            showToast('⚠️ Локальные данные', 'error');
+            if (isAdmin) {
+                showToast('⚠️ Проверьте GitHub токен', 'error');
+            } else {
+                showToast('⚠️ Локальные данные', 'error');
+            }
+        } else {
+            // Другие ошибки
+            const saved = localStorage.getItem(STORAGE_KEY);
+            products = saved ? JSON.parse(saved) : [];
+            showToast('⚠️ Ошибка загрузки', 'error');
         }
     } catch (error) {
         showToast('❌ Ошибка загрузки', 'error');
@@ -483,14 +488,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Авторизация админа
     if (adminBtn) {
         adminBtn.addEventListener('click', (e) => {
-            console.log('Admin button clicked via addEventListener!');
             e.preventDefault();
             e.stopPropagation();
             
             if (isAdmin) {
-                adminPanel.classList.toggle('hidden');
+                // Админ уже авторизован - ничего не делаем, панель всегда видна
             } else {
-                console.log('Opening admin auth modal');
                 openModal(adminAuthModal);
             }
         });
@@ -534,6 +537,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Кнопка обновления товаров
     const refreshProductsBtn = document.getElementById('refresh-products-btn');
     refreshProductsBtn.addEventListener('click', async () => {
+        if (!GITHUB_TOKEN) {
+            showToast('⚠️ Настройте токен для обновления', 'error');
+            return;
+        }
         await loadProducts();
     });
 
@@ -691,15 +698,32 @@ document.addEventListener('DOMContentLoaded', () => {
         openModal(githubTokenModal);
     });
 
-    githubTokenForm.addEventListener('submit', (e) => {
+    githubTokenForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const token = document.getElementById('github-token-input').value.trim();
         if (token) {
-            GITHUB_TOKEN = token;
-            localStorage.setItem('github_token', token);
-            closeModal(githubTokenModal);
-            githubTokenForm.reset();
-            showToast('✅ GitHub токен сохранен!', 'success');
+            // Проверяем валидность токена
+            try {
+                const testResponse = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${token}`
+                    }
+                });
+                
+                if (testResponse.ok) {
+                    GITHUB_TOKEN = token;
+                    localStorage.setItem('github_token', token);
+                    closeModal(githubTokenModal);
+                    githubTokenForm.reset();
+                    showToast('✅ Токен сохранен!', 'success');
+                    // Перезагружаем товары с новым токеном
+                    await loadProducts();
+                } else {
+                    showToast('❌ Неверный токен!', 'error');
+                }
+            } catch (error) {
+                showToast('❌ Ошибка проверки токена', 'error');
+            }
         }
     });
 
