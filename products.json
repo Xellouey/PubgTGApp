@@ -34,7 +34,14 @@
       "price": 1223,
       "description": "У4",
       "image": null
+    },
+    {
+      "id": 1753624900965,
+      "name": "Окоо",
+      "price": 56565,
+      "description": "Ивив",
+      "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T13:59:26.430Z"
+  "lastUpdated": "2025-07-27T14:01:41.770Z"
 }
