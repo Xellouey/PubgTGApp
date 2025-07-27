@@ -46,6 +46,10 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    z-index: 10;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 
 .admin-btn:hover {
@@ -55,6 +59,11 @@ body {
 
 .admin-btn:active {
     transform: scale(0.95);
+    opacity: 1;
+}
+
+.admin-btn:focus {
+    outline: none;
 }
 
 /* Products Container */

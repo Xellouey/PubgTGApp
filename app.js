@@ -96,6 +96,26 @@ function closeModal(modal) {
     modal.style.display = 'none';
 }
 
+// Глобальная функция для обработки клика админа
+window.handleAdminClick = function() {
+    console.log('handleAdminClick called!');
+    
+    if (isAdmin) {
+        // Если уже админ, показываем панель
+        const adminPanel = document.getElementById('admin-panel');
+        if (adminPanel) {
+            adminPanel.classList.toggle('hidden');
+        }
+    } else {
+        // Если не админ, показываем форму авторизации
+        const adminAuthModal = document.getElementById('admin-auth-modal');
+        if (adminAuthModal) {
+            console.log('Opening modal via onclick');
+            openModal(adminAuthModal);
+        }
+    }
+}
+
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
     // Инициализация DOM элементов
@@ -112,6 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
     imagePreview = document.getElementById('image-preview');
     productImage = document.getElementById('product-image');
 
+    // Отладка - проверяем что элементы найдены
+    console.log('Admin button found:', adminBtn);
+    console.log('Admin auth modal found:', adminAuthModal);
+
     // Настройка цветовой схемы
     document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
     document.body.style.color = tg.themeParams.text_color || '#000000';
@@ -120,15 +144,29 @@ document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
 
     // Авторизация админа
-    adminBtn.addEventListener('click', () => {
-        if (isAdmin) {
-            // Если уже админ, показываем панель
-            adminPanel.classList.toggle('hidden');
-        } else {
-            // Если не админ, показываем форму авторизации
-            openModal(adminAuthModal);
-        }
-    });
+    if (adminBtn) {
+        adminBtn.addEventListener('click', (e) => {
+            console.log('Admin button clicked!');
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (isAdmin) {
+                // Если уже админ, показываем панель
+                adminPanel.classList.toggle('hidden');
+            } else {
+                // Если не админ, показываем форму авторизации
+                console.log('Opening admin auth modal');
+                openModal(adminAuthModal);
+            }
+        });
+        
+        // Дополнительный обработчик для отладки
+        adminBtn.addEventListener('touchstart', (e) => {
+            console.log('Admin button touched!');
+        });
+    } else {
+        console.error('Admin button not found!');
+    }
 
     authSubmit.addEventListener('click', () => {
         if (adminPassword.value === ADMIN_PASSWORD) {
