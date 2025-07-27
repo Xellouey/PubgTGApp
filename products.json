@@ -1,13 +1,5 @@
 {
-  "products": [
-    {
-      "id": 1753626210251,
-      "name": "новый",
-      "price": 123,
-      "description": "вфв",
-      "image": null
-    }
-  ],
+  "products": [],
   "adminPassword": "admin",
-  "lastUpdated": "2025-07-27T14:32:03.707Z"
+  "lastUpdated": "2025-07-27T14:32:27.347Z"
 }
