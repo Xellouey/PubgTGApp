@@ -284,9 +284,63 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('Admin button found:', adminBtn);
     console.log('Admin auth modal found:', adminAuthModal);
 
-    // Настройка цветовой схемы
-    document.body.style.backgroundColor = tg.themeParams.bg_color || '#ffffff';
-    document.body.style.color = tg.themeParams.text_color || '#000000';
+    // Определение и настройка темы
+    function setupTheme() {
+        const bgColor = tg.themeParams.bg_color || '#ffffff';
+        const textColor = tg.themeParams.text_color || '#000000';
+        
+        console.log('Theme params:', tg.themeParams);
+        console.log('Background color:', bgColor);
+        console.log('Text color:', textColor);
+        
+        // Определяем тему по цвету фона
+        const isDark = isColorDark(bgColor);
+        
+        // Удаляем предыдущие классы темы
+        document.body.classList.remove('dark-theme', 'light-theme');
+        
+        // Добавляем соответствующий класс
+        if (isDark) {
+            document.body.classList.add('dark-theme');
+            console.log('Applied dark theme');
+        } else {
+            document.body.classList.add('light-theme');
+            console.log('Applied light theme');
+        }
+        
+        // Принудительно устанавливаем цвета
+        document.body.style.backgroundColor = bgColor;
+        document.body.style.color = textColor;
+    }
+    
+    // Функция для определения темности цвета
+    function isColorDark(color) {
+        // Если цвет не задан, считаем светлым
+        if (!color) return false;
+        
+        // Убираем # если есть
+        color = color.replace('#', '');
+        
+        // Конвертируем в RGB
+        const r = parseInt(color.substr(0, 2), 16);
+        const g = parseInt(color.substr(2, 2), 16);
+        const b = parseInt(color.substr(4, 2), 16);
+        
+        // Вычисляем яркость по формуле
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        
+        // Если яркость меньше 128, цвет темный
+        return brightness < 128;
+    }
+    
+    // Настройка темы при загрузке
+    setupTheme();
+    
+    // Обновление темы при изменении
+    tg.onEvent('themeChanged', () => {
+        console.log('Theme changed, updating...');
+        setupTheme();
+    });
     
     loadProducts();
 

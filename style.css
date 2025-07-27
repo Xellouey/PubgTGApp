@@ -6,12 +6,23 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, var(--tg-theme-bg-color, #f8f9fa) 0%, var(--tg-theme-secondary-bg-color, #ffffff) 100%);
+    background: var(--tg-theme-bg-color, #ffffff);
     color: var(--tg-theme-text-color, #000000);
     padding: 20px;
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
+}
+
+/* Принудительные стили для темной темы */
+body.dark-theme {
+    background: #1a1a1a !important;
+    color: #ffffff !important;
+}
+
+body.light-theme {
+    background: #ffffff !important;
+    color: #000000 !important;
 }
 
 body::before {
@@ -22,8 +33,8 @@ body::before {
     width: 100%;
     height: 100%;
     background: 
-        radial-gradient(circle at 20% 80%, rgba(0, 122, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(0, 200, 81, 0.1) 0%, transparent 50%);
+        radial-gradient(circle at 20% 80%, rgba(0, 122, 255, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(0, 200, 81, 0.05) 0%, transparent 50%);
     pointer-events: none;
     z-index: -1;
 }
@@ -286,10 +297,21 @@ body::before {
     grid-column: 1 / -1;
     text-align: center;
     padding: 60px 20px;
-    background: linear-gradient(135deg, var(--tg-theme-secondary-bg-color, #f8f9fa) 0%, var(--tg-theme-bg-color, #ffffff) 100%);
+    background: var(--tg-theme-secondary-bg-color, #f8f9fa);
     border-radius: 16px;
-    border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+    border: 1px solid var(--tg-theme-hint-color, rgba(128, 128, 128, 0.3));
     animation: pulse 2s ease-in-out infinite;
+}
+
+/* Темная тема для пустого состояния */
+body.dark-theme .empty-state {
+    background: #2a2a2a !important;
+    border-color: #444444 !important;
+}
+
+body.light-theme .empty-state {
+    background: #f8f9fa !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 @keyframes pulse {
@@ -310,10 +332,26 @@ body::before {
     font-weight: 600;
 }
 
+body.dark-theme .empty-state h2 {
+    color: #ffffff !important;
+}
+
+body.light-theme .empty-state h2 {
+    color: #000000 !important;
+}
+
 .empty-state p {
     font-size: 14px;
     color: var(--tg-theme-hint-color, #666666);
     line-height: 1.5;
+}
+
+body.dark-theme .empty-state p {
+    color: #cccccc !important;
+}
+
+body.light-theme .empty-state p {
+    color: #666666 !important;
 }
 
 /* Product Card */
@@ -323,10 +361,23 @@ body::before {
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.05));
+    border: 1px solid var(--tg-theme-hint-color, rgba(128, 128, 128, 0.2));
     position: relative;
     animation: slideUp 0.5s ease-out;
     animation-fill-mode: both;
+}
+
+/* Темная тема для карточек */
+body.dark-theme .product-card {
+    background: #2a2a2a !important;
+    border-color: #444444 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.light-theme .product-card {
+    background: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 @keyframes slideUp {
@@ -401,12 +452,28 @@ body::before {
     overflow: hidden;
 }
 
+body.dark-theme .product-name {
+    color: #ffffff !important;
+}
+
+body.light-theme .product-name {
+    color: #000000 !important;
+}
+
 .product-price {
     font-size: 18px;
     font-weight: 700;
     color: var(--tg-theme-button-color, #007AFF);
     margin-bottom: 8px;
     position: relative;
+}
+
+body.dark-theme .product-price {
+    color: #4A9EFF !important;
+}
+
+body.light-theme .product-price {
+    color: #007AFF !important;
 }
 
 .product-price::before {
@@ -424,6 +491,14 @@ body::before {
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.4;
+}
+
+body.dark-theme .product-description {
+    color: #cccccc !important;
+}
+
+body.light-theme .product-description {
+    color: #666666 !important;
 }
 
 .buy-btn {
@@ -586,8 +661,28 @@ body::before {
     max-width: 400px;
     position: relative;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--tg-theme-hint-color, rgba(0, 0, 0, 0.1));
+    border: 1px solid var(--tg-theme-hint-color, rgba(128, 128, 128, 0.3));
     animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body.dark-theme .modal-content {
+    background-color: #2a2a2a !important;
+    border-color: #444444 !important;
+    color: #ffffff !important;
+}
+
+body.light-theme .modal-content {
+    background-color: #ffffff !important;
+    border-color: rgba(0, 0, 0, 0.1) !important;
+    color: #000000 !important;
+}
+
+body.dark-theme .modal-content h2 {
+    color: #ffffff !important;
+}
+
+body.light-theme .modal-content h2 {
+    color: #000000 !important;
 }
 
 @keyframes modalSlideIn {
@@ -622,7 +717,8 @@ body::before {
 }
 
 #product-form input,
-#product-form textarea {
+#product-form textarea,
+#change-password-form input {
     padding: 16px;
     border: 2px solid var(--tg-theme-hint-color, #e9ecef);
     border-radius: 12px;
@@ -631,6 +727,22 @@ body::before {
     color: var(--tg-theme-text-color, #000000);
     transition: all 0.3s ease;
     position: relative;
+}
+
+body.dark-theme #product-form input,
+body.dark-theme #product-form textarea,
+body.dark-theme #change-password-form input {
+    background: #1a1a1a !important;
+    border-color: #444444 !important;
+    color: #ffffff !important;
+}
+
+body.light-theme #product-form input,
+body.light-theme #product-form textarea,
+body.light-theme #change-password-form input {
+    background: #ffffff !important;
+    border-color: #e9ecef !important;
+    color: #000000 !important;
 }
 
 #product-form input:focus,
