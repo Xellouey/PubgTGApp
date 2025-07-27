@@ -116,25 +116,37 @@ function renderProducts() {
     if (products.length === 0) {
         productsContainer.innerHTML = `
             <div class="empty-state">
-                <h2>Магазин пуст</h2>
+                <h2>🛍️ Магазин пуст</h2>
                 <p>Товары появятся здесь после добавления администратором</p>
             </div>
         `;
         return;
     }
 
-    productsContainer.innerHTML = products.map(product => `
-        <div class="product-card">
+    // Очищаем контейнер
+    productsContainer.innerHTML = '';
+    
+    // Добавляем товары с анимацией
+    products.forEach((product, index) => {
+        const productCard = document.createElement('div');
+        productCard.className = 'product-card';
+        productCard.style.animationDelay = `${index * 0.1}s`;
+        
+        productCard.innerHTML = `
             ${product.image ? `<img src="${product.image}" alt="${product.name}" class="product-image">` : '<div class="product-image"></div>'}
             <div class="product-info">
                 <div class="product-name">${product.name}</div>
                 <div class="product-price">${product.price} ₽</div>
                 <div class="product-description">${product.description}</div>
-                <button class="buy-btn" onclick="buyProduct(${product.id})">Купить</button>
-                ${isAdmin ? `<button class="btn btn-secondary" style="margin-top: 8px; width: 100%; padding: 4px; font-size: 11px;" onclick="deleteProduct(${product.id})">Удалить</button>` : ''}
+                <button class="buy-btn" onclick="buyProduct(${product.id})">
+                    <span>🛒 Купить</span>
+                </button>
+                ${isAdmin ? `<button class="btn btn-secondary" style="margin-top: 8px; width: 100%; padding: 6px; font-size: 11px;" onclick="deleteProduct(${product.id})">🗑️ Удалить</button>` : ''}
             </div>
-        </div>
-    `).join('');
+        `;
+        
+        productsContainer.appendChild(productCard);
+    });
 }
 
 // Покупка товара
@@ -221,13 +233,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (adminPassword.value === ADMIN_PASSWORD) {
             isAdmin = true;
             adminBtn.style.opacity = '1';
+            adminBtn.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                adminBtn.style.transform = 'scale(1)';
+            }, 200);
             adminPanel.classList.remove('hidden');
             closeModal(adminAuthModal);
             adminPassword.value = '';
             renderProducts();
-            tg.showAlert('Добро пожаловать, администратор!');
+            tg.showAlert('🎉 Добро пожаловать, администратор!');
         } else {
-            tg.showAlert('Неверный пароль!');
+            adminPassword.style.animation = 'shake 0.5s ease-in-out';
+            setTimeout(() => {
+                adminPassword.style.animation = '';
+            }, 500);
+            tg.showAlert('❌ Неверный пароль!');
         }
     });
 
@@ -271,24 +291,42 @@ document.addEventListener('DOMContentLoaded', () => {
             image: null
         };
 
+        // Показываем индикатор загрузки
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<span class="loading"></span> Добавляем...';
+        submitBtn.disabled = true;
+
         if (imageFile) {
             const reader = new FileReader();
             reader.onload = (e) => {
                 product.image = e.target.result;
                 products.push(product);
                 saveProducts();
-                renderProducts();
-                closeModal(addProductModal);
-                productForm.reset();
-                imagePreview.innerHTML = '';
+                
+                // Анимация успеха
+                setTimeout(() => {
+                    renderProducts();
+                    closeModal(addProductModal);
+                    productForm.reset();
+                    imagePreview.innerHTML = '';
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                    tg.showAlert('✅ Товар успешно добавлен!');
+                }, 800);
             };
             reader.readAsDataURL(imageFile);
         } else {
-            products.push(product);
-            saveProducts();
-            renderProducts();
-            closeModal(addProductModal);
-            productForm.reset();
+            setTimeout(() => {
+                products.push(product);
+                saveProducts();
+                renderProducts();
+                closeModal(addProductModal);
+                productForm.reset();
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                tg.showAlert('✅ Товар успешно добавлен!');
+            }, 800);
         }
     });
 
