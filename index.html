@@ -69,6 +69,24 @@
             </div>
         </div>
 
+        <!-- Модальное окно GitHub токена -->
+        <div id="github-token-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>🔗 GitHub токен</h2>
+                <form id="github-token-form">
+                    <input type="password" id="github-token-input" placeholder="Введите GitHub токен" required>
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Сохранить</button>
+                        <button type="button" class="btn btn-secondary" id="cancel-token">Отмена</button>
+                    </div>
+                </form>
+                <div style="margin-top: 16px; font-size: 12px;">
+                    <span id="token-status">❌ Токен не настроен</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Админ панель -->
         <div id="admin-panel" class="admin-panel hidden">
             <button id="add-product-btn" class="btn">+ Добавить товар</button>
@@ -83,6 +101,9 @@
             </button>
             <button id="change-password-btn" class="context-menu-item">
                 <span>🔐</span> Сменить пароль
+            </button>
+            <button id="github-token-btn" class="context-menu-item">
+                <span>🔗</span> GitHub токен
             </button>
         </div>
     </div>
@@ -114,8 +135,8 @@ const GITHUB_REPO = 'PubgTGApp';
 const GITHUB_FILE = 'products.json';
 const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${GITHUB_FILE}`;
 
-// GitHub Personal Access Token (замените на ваш токен)
-const GITHUB_TOKEN = 'ВСТАВЬТЕ_ВАШ_ТОКЕН_СЮДА'; // Замените на реальный токен
+// GitHub Personal Access Token (загружается из localStorage)
+let GITHUB_TOKEN = localStorage.getItem('github_token') || null;
 let githubSha = null; // Для обновления файла
 
 // Состояние приложения
@@ -229,8 +250,8 @@ async function saveProducts() {
         localStorage.setItem('products_backup', JSON.stringify(content));
         
         // Проверяем наличие токена
-        if (!GITHUB_TOKEN || GITHUB_TOKEN === 'ВСТАВЬТЕ_ВАШ_ТОКЕН_СЮДА') {
-            showToast('⚠️ Нужен GitHub токен для синхронизации', 'error', 4000);
+        if (!GITHUB_TOKEN) {
+            showToast('⚠️ Настройте GitHub токен в админ-панели', 'error', 4000);
             console.log('GitHub токен не настроен');
             return;
         }
@@ -622,6 +643,34 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('cancel-password').addEventListener('click', () => {
         closeModal(changePasswordModal);
         changePasswordForm.reset();
+    });
+
+    // GitHub токен
+    const githubTokenBtn = document.getElementById('github-token-btn');
+    const githubTokenModal = document.getElementById('github-token-modal');
+    const githubTokenForm = document.getElementById('github-token-form');
+    
+    githubTokenBtn.addEventListener('click', () => {
+        adminContextMenu.classList.add('hidden');
+        document.getElementById('token-status').textContent = GITHUB_TOKEN ? '✅ Токен настроен' : '❌ Токен не настроен';
+        openModal(githubTokenModal);
+    });
+
+    githubTokenForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const token = document.getElementById('github-token-input').value.trim();
+        if (token) {
+            GITHUB_TOKEN = token;
+            localStorage.setItem('github_token', token);
+            closeModal(githubTokenModal);
+            githubTokenForm.reset();
+            showToast('✅ GitHub токен сохранен!', 'success');
+        }
+    });
+
+    document.getElementById('cancel-token').addEventListener('click', () => {
+        closeModal(githubTokenModal);
+        githubTokenForm.reset();
     });
 
     // Обработчики контекстного меню
