@@ -204,11 +204,11 @@ body::before {
     position: fixed;
     top: 70px;
     right: 20px;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(42, 42, 42, 0.95) !important;
     backdrop-filter: blur(10px);
     border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border: 1px solid #444444 !important;
     z-index: 1500;
     overflow: hidden;
     animation: contextMenuSlide 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -234,7 +234,7 @@ body::before {
     text-align: left;
     font-size: 14px;
     font-weight: 500;
-    color: var(--tg-theme-text-color, #000000);
+    color: #ffffff !important;
     cursor: pointer;
     transition: all 0.2s ease;
     display: flex;
@@ -243,8 +243,8 @@ body::before {
 }
 
 .context-menu-item:hover {
-    background: var(--tg-theme-button-color, rgba(0, 122, 255, 0.1));
-    color: var(--tg-theme-button-color, #007AFF);
+    background: rgba(74, 158, 255, 0.2) !important;
+    color: #4A9EFF !important;
 }
 
 .context-menu-item span {
@@ -854,7 +854,7 @@ body::before {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 12px;
     z-index: 100;

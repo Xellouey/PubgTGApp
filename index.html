@@ -88,7 +88,7 @@
         </div>
 
         <!-- Админ панель -->
-        <div id="admin-panel" class="admin-panel hidden">
+        <div id="admin-panel" class="admin-panel">
             <button id="add-product-btn" class="btn">+ Добавить товар</button>
             <button id="refresh-products-btn" class="btn btn-secondary">🔄 Обновить</button>
             <button id="logout-btn" class="btn btn-secondary">Выйти</button>
@@ -96,9 +96,6 @@
 
         <!-- Контекстное меню админа -->
         <div id="admin-context-menu" class="admin-context-menu hidden">
-            <button id="toggle-panel-btn" class="context-menu-item">
-                <span>📋</span> Показать/скрыть панель
-            </button>
             <button id="change-password-btn" class="context-menu-item">
                 <span>🔐</span> Сменить пароль
             </button>
@@ -474,7 +471,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Элементы контекстного меню
     const adminContextMenu = document.getElementById('admin-context-menu');
-    const togglePanelBtn = document.getElementById('toggle-panel-btn');
     const changePasswordMenuBtn = document.getElementById('change-password-btn');
 
     // Принудительно устанавливаем темную тему
@@ -508,11 +504,12 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 adminBtn.style.transform = 'scale(1)';
             }, 200);
-            adminPanel.classList.remove('hidden');
+            // Админ-панель теперь всегда видна для админа
+            adminPanel.style.display = 'flex';
             closeModal(adminAuthModal);
             adminPassword.value = '';
             renderProducts();
-            showToast('🎉 Добро пожаловать, администратор!', 'success');
+            showToast('🎉 Добро пожаловать!', 'success');
         } else {
             adminPassword.style.animation = 'shake 0.5s ease-in-out';
             setTimeout(() => {
@@ -525,9 +522,9 @@ document.addEventListener('DOMContentLoaded', () => {
     logoutBtn.addEventListener('click', () => {
         isAdmin = false;
         adminBtn.style.opacity = '0.3';
-        adminPanel.classList.add('hidden');
+        adminPanel.style.display = 'none';
         renderProducts();
-        showToast('👋 Вы вышли из админ-панели', 'info', 2000);
+        showToast('👋 Выход из админки', 'info');
     });
 
     addProductBtn.addEventListener('click', () => {
@@ -712,11 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Обработчики контекстного меню
-    togglePanelBtn.addEventListener('click', () => {
-        adminPanel.classList.toggle('hidden');
-        adminContextMenu.classList.add('hidden');
-    });
-
     changePasswordMenuBtn.addEventListener('click', () => {
         adminContextMenu.classList.add('hidden');
         openModal(changePasswordModal);
