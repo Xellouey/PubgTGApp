@@ -18,6 +18,28 @@ let productsContainer, adminBtn, adminAuthModal, addProductModal, adminPanel;
 let adminPassword, authSubmit, addProductBtn, logoutBtn, productForm;
 let imagePreview, productImage;
 
+// Глобальная функция для обработки клика админа (должна быть доступна сразу)
+window.handleAdminClick = function() {
+    console.log('handleAdminClick called!');
+    
+    // Получаем элементы напрямую, если они еще не инициализированы
+    const adminAuthModal = document.getElementById('admin-auth-modal');
+    const adminPanel = document.getElementById('admin-panel');
+    
+    if (isAdmin) {
+        // Если уже админ, показываем панель
+        if (adminPanel) {
+            adminPanel.classList.toggle('hidden');
+        }
+    } else {
+        // Если не админ, показываем форму авторизации
+        if (adminAuthModal) {
+            console.log('Opening modal via onclick');
+            adminAuthModal.style.display = 'block';
+        }
+    }
+}
+
 // Загрузка товаров из localStorage
 function loadProducts() {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -96,25 +118,7 @@ function closeModal(modal) {
     modal.style.display = 'none';
 }
 
-// Глобальная функция для обработки клика админа
-window.handleAdminClick = function() {
-    console.log('handleAdminClick called!');
-    
-    if (isAdmin) {
-        // Если уже админ, показываем панель
-        const adminPanel = document.getElementById('admin-panel');
-        if (adminPanel) {
-            adminPanel.classList.toggle('hidden');
-        }
-    } else {
-        // Если не админ, показываем форму авторизации
-        const adminAuthModal = document.getElementById('admin-auth-modal');
-        if (adminAuthModal) {
-            console.log('Opening modal via onclick');
-            openModal(adminAuthModal);
-        }
-    }
-}
+
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
