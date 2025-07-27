@@ -57,6 +57,9 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h2>🔐 Смена пароля</h2>
+                <div style="margin-bottom: 16px; font-size: 12px; color: #888;">
+                    💡 Пароль будет изменен глобально для всех пользователей
+                </div>
                 <form id="change-password-form">
                     <input type="password" id="current-password" placeholder="Текущий пароль" required>
                     <input type="password" id="new-password" placeholder="Новый пароль" required>
@@ -132,7 +135,7 @@ tg.ready();
 tg.expand();
 
 // Константы
-let ADMIN_PASSWORD = localStorage.getItem('admin_password') || 'admin123'; // Пароль админа
+let ADMIN_PASSWORD = localStorage.getItem('admin_password') || 'admin123'; // Пароль админа (будет обновлен из GitHub)
 
 // GitHub API настройки
 const GITHUB_OWNER = 'Xellouey';
@@ -279,6 +282,13 @@ async function loadProducts() {
             const decodedContent = decodeURIComponent(escape(atob(base64Content)));
             const content = JSON.parse(decodedContent);
             products = content.products || [];
+            
+            // Загружаем глобальный пароль админа
+            if (content.adminPassword) {
+                ADMIN_PASSWORD = content.adminPassword;
+                console.log('🔐 Глобальный пароль админа загружен');
+            }
+            
             console.log('✅ Товары загружены:', products.length, 'шт.');
         } else if (response.status === 404) {
             githubSha = null;
@@ -315,6 +325,7 @@ async function saveProducts() {
     try {
         const content = {
             products: products,
+            adminPassword: ADMIN_PASSWORD, // Сохраняем пароль админа глобально
             lastUpdated: new Date().toISOString()
         };
         
@@ -754,15 +765,20 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        // Сохраняем новый пароль
+        // Сохраняем новый пароль глобально
+        ADMIN_PASSWORD = newPassword;
         localStorage.setItem('admin_password', newPassword);
-        window.ADMIN_PASSWORD = newPassword;
+        
+        // Сохраняем изменения в GitHub (глобально для всех)
+        saveProducts().then(() => {
+            showToast('✅ Пароль изменен глобально для всех пользователей!', 'success');
+        }).catch(() => {
+            showToast('⚠️ Пароль изменен локально, но не удалось синхронизировать', 'warning');
+        });
         
         // Очищаем форму и закрываем модальное окно
         changePasswordForm.reset();
         closeModal(changePasswordModal);
-        
-        showToast('✅ Пароль успешно изменен!', 'success');
     });
 
     // Кнопка отмены смены пароля
