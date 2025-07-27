@@ -208,14 +208,21 @@ async function loadProducts() {
             const data = await response.json();
             githubSha = data.sha; // Сохраняем SHA для обновления
             
+            console.log('GitHub SHA получен:', githubSha);
+            
             // Декодируем содержимое из base64
-            const content = JSON.parse(atob(data.content));
+            const content = JSON.parse(atob(data.content.replace(/\n/g, '')));
             products = content.products || [];
             
             console.log('Товары загружены из GitHub:', products);
             showToast('✅ Товары загружены', 'success', 2000);
+        } else if (response.status === 404) {
+            console.log('Файл товаров не найден, будет создан при первом сохранении');
+            githubSha = null;
+            products = [];
+            showToast('📝 Файл товаров будет создан', 'info', 2000);
         } else {
-            console.log('Файл товаров не найден, используем пустой список');
+            console.error('Ошибка загрузки:', response.status, response.statusText);
             products = [];
         }
     } catch (error) {
@@ -256,12 +263,20 @@ async function saveProducts() {
             return;
         }
         
-        // Отправляем в GitHub
+        // Подготавливаем данные для GitHub
         const updateData = {
             message: `Update products - ${new Date().toLocaleString()}`,
-            content: btoa(JSON.stringify(content, null, 2)), // Кодируем в base64
-            sha: githubSha // Нужен для обновления существующего файла
+            content: btoa(JSON.stringify(content, null, 2)) // Кодируем в base64
         };
+        
+        // Добавляем SHA только если файл уже существует
+        if (githubSha) {
+            updateData.sha = githubSha;
+        }
+        
+        console.log('Отправляем данные в GitHub:', updateData);
+        console.log('GitHub SHA:', githubSha);
+        console.log('Токен настроен:', !!GITHUB_TOKEN);
         
         const response = await fetch(GITHUB_API_URL, {
             method: 'PUT',
@@ -272,6 +287,8 @@ async function saveProducts() {
             body: JSON.stringify(updateData)
         });
         
+        console.log('Ответ GitHub API:', response.status, response.statusText);
+        
         if (response.ok) {
             const result = await response.json();
             githubSha = result.content.sha; // Обновляем SHA для следующего обновления
@@ -280,7 +297,7 @@ async function saveProducts() {
         } else {
             const error = await response.json();
             console.error('Ошибка GitHub API:', error);
-            showToast('❌ Ошибка синхронизации с GitHub', 'error', 4000);
+            showToast(`❌ Ошибка GitHub: ${error.message || 'Неизвестная ошибка'}`, 'error', 5000);
         }
         
     } catch (error) {
