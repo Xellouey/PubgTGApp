@@ -6,23 +6,12 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
+    background: #1a1a1a !important;
+    color: #ffffff !important;
     padding: 20px;
     min-height: 100vh;
     position: relative;
     overflow-x: hidden;
-}
-
-/* Принудительные стили для темной темы */
-body.dark-theme {
-    background: #1a1a1a !important;
-    color: #ffffff !important;
-}
-
-body.light-theme {
-    background: #ffffff !important;
-    color: #000000 !important;
 }
 
 body::before {
@@ -297,21 +286,10 @@ body::before {
     grid-column: 1 / -1;
     text-align: center;
     padding: 60px 20px;
-    background: var(--tg-theme-secondary-bg-color, #f8f9fa);
-    border-radius: 16px;
-    border: 1px solid var(--tg-theme-hint-color, rgba(128, 128, 128, 0.3));
-    animation: pulse 2s ease-in-out infinite;
-}
-
-/* Темная тема для пустого состояния */
-body.dark-theme .empty-state {
     background: #2a2a2a !important;
-    border-color: #444444 !important;
-}
-
-body.light-theme .empty-state {
-    background: #f8f9fa !important;
-    border-color: rgba(0, 0, 0, 0.1) !important;
+    border-radius: 16px;
+    border: 1px solid #444444 !important;
+    animation: pulse 2s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -328,56 +306,27 @@ body.light-theme .empty-state {
 .empty-state h2 {
     margin-bottom: 12px;
     font-size: 20px;
-    color: var(--tg-theme-text-color, #000000);
-    font-weight: 600;
-}
-
-body.dark-theme .empty-state h2 {
     color: #ffffff !important;
-}
-
-body.light-theme .empty-state h2 {
-    color: #000000 !important;
+    font-weight: 600;
 }
 
 .empty-state p {
     font-size: 14px;
-    color: var(--tg-theme-hint-color, #666666);
-    line-height: 1.5;
-}
-
-body.dark-theme .empty-state p {
     color: #cccccc !important;
-}
-
-body.light-theme .empty-state p {
-    color: #666666 !important;
+    line-height: 1.5;
 }
 
 /* Product Card */
 .product-card {
-    background: var(--tg-theme-secondary-bg-color, #ffffff);
+    background: #2a2a2a !important;
     border-radius: 16px;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--tg-theme-hint-color, rgba(128, 128, 128, 0.2));
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid #444444 !important;
     position: relative;
     animation: slideUp 0.5s ease-out;
     animation-fill-mode: both;
-}
-
-/* Темная тема для карточек */
-body.dark-theme .product-card {
-    background: #2a2a2a !important;
-    border-color: #444444 !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
-}
-
-body.light-theme .product-card {
-    background: #ffffff !important;
-    border-color: rgba(0, 0, 0, 0.1) !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 @keyframes slideUp {
@@ -444,7 +393,7 @@ body.light-theme .product-card {
     font-size: 15px;
     font-weight: 600;
     margin-bottom: 6px;
-    color: var(--tg-theme-text-color, #000000);
+    color: #ffffff !important;
     line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 1;
@@ -452,28 +401,12 @@ body.light-theme .product-card {
     overflow: hidden;
 }
 
-body.dark-theme .product-name {
-    color: #ffffff !important;
-}
-
-body.light-theme .product-name {
-    color: #000000 !important;
-}
-
 .product-price {
     font-size: 18px;
     font-weight: 700;
-    color: var(--tg-theme-button-color, #007AFF);
+    color: #4A9EFF !important;
     margin-bottom: 8px;
     position: relative;
-}
-
-body.dark-theme .product-price {
-    color: #4A9EFF !important;
-}
-
-body.light-theme .product-price {
-    color: #007AFF !important;
 }
 
 .product-price::before {
@@ -484,21 +417,13 @@ body.light-theme .product-price {
 
 .product-description {
     font-size: 12px;
-    color: var(--tg-theme-hint-color, #666666);
+    color: #cccccc !important;
     margin-bottom: 16px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     line-height: 1.4;
-}
-
-body.dark-theme .product-description {
-    color: #cccccc !important;
-}
-
-body.light-theme .product-description {
-    color: #666666 !important;
 }
 
 .buy-btn {
@@ -653,7 +578,7 @@ body.light-theme .product-description {
 }
 
 .modal-content {
-    background-color: var(--tg-theme-bg-color, #ffffff);
+    background-color: #2a2a2a !important;
     margin: 10% auto;
     padding: 24px;
     border-radius: 20px;
@@ -661,28 +586,13 @@ body.light-theme .product-description {
     max-width: 400px;
     position: relative;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--tg-theme-hint-color, rgba(128, 128, 128, 0.3));
+    border: 1px solid #444444 !important;
     animation: modalSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-body.dark-theme .modal-content {
-    background-color: #2a2a2a !important;
-    border-color: #444444 !important;
     color: #ffffff !important;
 }
 
-body.light-theme .modal-content {
-    background-color: #ffffff !important;
-    border-color: rgba(0, 0, 0, 0.1) !important;
-    color: #000000 !important;
-}
-
-body.dark-theme .modal-content h2 {
+.modal-content h2 {
     color: #ffffff !important;
-}
-
-body.light-theme .modal-content h2 {
-    color: #000000 !important;
 }
 
 @keyframes modalSlideIn {
@@ -718,31 +628,16 @@ body.light-theme .modal-content h2 {
 
 #product-form input,
 #product-form textarea,
-#change-password-form input {
+#change-password-form input,
+#admin-password {
     padding: 16px;
-    border: 2px solid var(--tg-theme-hint-color, #e9ecef);
+    border: 2px solid #444444 !important;
     border-radius: 12px;
     font-size: 16px;
-    background: var(--tg-theme-bg-color, #ffffff);
-    color: var(--tg-theme-text-color, #000000);
+    background: #1a1a1a !important;
+    color: #ffffff !important;
     transition: all 0.3s ease;
     position: relative;
-}
-
-body.dark-theme #product-form input,
-body.dark-theme #product-form textarea,
-body.dark-theme #change-password-form input {
-    background: #1a1a1a !important;
-    border-color: #444444 !important;
-    color: #ffffff !important;
-}
-
-body.light-theme #product-form input,
-body.light-theme #product-form textarea,
-body.light-theme #change-password-form input {
-    background: #ffffff !important;
-    border-color: #e9ecef !important;
-    color: #000000 !important;
 }
 
 #product-form input:focus,
