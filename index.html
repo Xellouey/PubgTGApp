@@ -203,7 +203,19 @@ async function loadProducts() {
     try {
         showToast('📥 Загружаем товары...', 'info', 2000);
         
-        const response = await fetch(GITHUB_API_URL);
+        // Сначала пробуем без токена (публичное чтение)
+        let response = await fetch(GITHUB_API_URL);
+        
+        // Если 403, пробуем с токеном
+        if (response.status === 403 && GITHUB_TOKEN) {
+            console.log('Пробуем загрузить с токеном...');
+            response = await fetch(GITHUB_API_URL, {
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`
+                }
+            });
+        }
+        
         if (response.ok) {
             const data = await response.json();
             githubSha = data.sha; // Сохраняем SHA для обновления
@@ -223,7 +235,13 @@ async function loadProducts() {
             showToast('📝 Файл товаров будет создан', 'info', 2000);
         } else {
             console.error('Ошибка загрузки:', response.status, response.statusText);
-            products = [];
+            const errorData = await response.json().catch(() => ({}));
+            console.error('Детали ошибки:', errorData);
+            
+            // Fallback к localStorage
+            const saved = localStorage.getItem(STORAGE_KEY);
+            products = saved ? JSON.parse(saved) : [];
+            showToast('⚠️ Используем локальные данные', 'error', 3000);
         }
     } catch (error) {
         console.error('Ошибка загрузки товаров:', error);
@@ -263,6 +281,25 @@ async function saveProducts() {
             return;
         }
         
+        // Получаем актуальный SHA перед сохранением
+        try {
+            const getResponse = await fetch(GITHUB_API_URL, {
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`
+                }
+            });
+            
+            if (getResponse.ok) {
+                const fileData = await getResponse.json();
+                githubSha = fileData.sha;
+                console.log('Получен актуальный SHA:', githubSha);
+            } else if (getResponse.status !== 404) {
+                console.error('Ошибка получения SHA:', getResponse.status);
+            }
+        } catch (error) {
+            console.error('Ошибка получения SHA:', error);
+        }
+        
         // Подготавливаем данные для GitHub
         const updateData = {
             message: `Update products - ${new Date().toLocaleString()}`,
@@ -272,6 +309,9 @@ async function saveProducts() {
         // Добавляем SHA только если файл уже существует
         if (githubSha) {
             updateData.sha = githubSha;
+            console.log('Используем SHA для обновления:', githubSha);
+        } else {
+            console.log('SHA не найден, создаем новый файл');
         }
         
         console.log('Отправляем данные в GitHub:', updateData);
