@@ -885,6 +885,23 @@ body::before {
     transform: translateY(-3px) scale(1.05);
 }
 
+/* Refresh Panel for all users */
+.refresh-panel {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 100;
+}
+
+.refresh-panel .btn {
+    padding: 12px 20px;
+    font-size: 13px;
+    border-radius: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+    min-width: 120px;
+}
+
 .hidden {
     display: none !important;
 }
