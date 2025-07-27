@@ -115,6 +115,16 @@
                 <span>🔗</span> GitHub токен
             </button>
         </div>
+
+        <!-- Модальное окно детального просмотра товара -->
+        <div id="product-detail-modal" class="modal">
+            <div class="modal-content product-detail-content">
+                <span class="close">&times;</span>
+                <div id="product-detail-body">
+                    <!-- Содержимое будет добавлено динамически -->
+                </div>
+            </div>
+        </div>
     </div>
     
     <!-- Toast Container -->
@@ -436,8 +446,8 @@ function renderProducts() {
         
         const imageHtml = product.image ? 
             `<div class="product-image-container">
-                <img src="${product.image}" alt="${product.name}" class="product-image" onclick="openFullscreen('${product.image}', '${product.name}')">
-                <button class="fullscreen-icon" onclick="openFullscreen('${product.image}', '${product.name}')" title="Открыть в полном размере">🔍</button>
+                <img src="${product.image}" alt="${product.name}" class="product-image" onclick="event.stopPropagation(); openFullscreen('${product.image}', '${product.name}')">
+                <button class="fullscreen-icon" onclick="event.stopPropagation(); openFullscreen('${product.image}', '${product.name}')" title="Открыть в полном размере">🔍</button>
             </div>` : 
             '<div class="product-image"></div>';
         
@@ -447,12 +457,23 @@ function renderProducts() {
                 <div class="product-name">${product.name}</div>
                 <div class="product-price">${product.price} ₽</div>
                 <div class="product-description">${product.description}</div>
-                <button class="buy-btn" onclick="buyProduct(${product.id})">
+                <button class="buy-btn" onclick="event.stopPropagation(); buyProduct(${product.id})">
                     <span>🛒 Купить</span>
                 </button>
-                ${isAdmin ? `<button class="btn btn-secondary" style="margin-top: 8px; width: 100%; padding: 6px; font-size: 11px;" onclick="deleteProduct(${product.id})">🗑️ Удалить</button>` : ''}
+                ${isAdmin ? `<button class="btn btn-secondary" style="margin-top: 8px; width: 100%; padding: 6px; font-size: 11px;" onclick="event.stopPropagation(); deleteProduct(${product.id})">🗑️ Удалить</button>` : ''}
             </div>
         `;
+        
+        // Добавляем обработчик клика на карточку (но не на кнопки и изображение)
+        productCard.addEventListener('click', (e) => {
+            // Проверяем, что клик не по кнопке, изображению или иконке полноэкранного режима
+            if (!e.target.closest('.buy-btn') && 
+                !e.target.closest('.btn-secondary') && 
+                !e.target.closest('.product-image') && 
+                !e.target.closest('.fullscreen-icon')) {
+                showProductDetail(product.id);
+            }
+        });
         
         productsContainer.appendChild(productCard);
     });
@@ -514,8 +535,6 @@ window.openFullscreen = function(imageSrc, altText) {
     
     // Блокируем скролл страницы
     document.body.style.overflow = 'hidden';
-    
-    showToast('🔍 Изображение открыто в полном размере', 'info', 2000);
 }
 
 window.closeFullscreen = function() {
@@ -523,6 +542,45 @@ window.closeFullscreen = function() {
     overlay.style.display = 'none';
     
     // Восстанавливаем скролл страницы
+    document.body.style.overflow = 'auto';
+}
+
+// Детальный просмотр товара
+function showProductDetail(productId) {
+    const product = products.find(p => p.id === productId);
+    if (!product) return;
+    
+    const modal = document.getElementById('product-detail-modal');
+    const body = document.getElementById('product-detail-body');
+    
+    const imageHtml = product.image ? 
+        `<img src="${product.image}" alt="${product.name}" class="product-detail-image" onclick="openFullscreen('${product.image}', '${product.name}')">` : 
+        '<div class="product-detail-image"></div>';
+    
+    body.innerHTML = `
+        <div class="product-detail-header">
+            ${imageHtml}
+            <div class="product-detail-info">
+                <div class="product-detail-name">${product.name}</div>
+                <div class="product-detail-price">${product.price} ₽</div>
+            </div>
+        </div>
+        <div class="product-detail-description">${product.description}</div>
+        <div class="product-detail-actions">
+            <button class="btn product-detail-buy-btn" onclick="buyProduct(${product.id}); closeProductDetail()">
+                <span>🛒 Купить</span>
+            </button>
+            ${isAdmin ? `<button class="btn btn-secondary" onclick="deleteProduct(${product.id}); closeProductDetail()">🗑️ Удалить</button>` : ''}
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeProductDetail() {
+    const modal = document.getElementById('product-detail-modal');
+    modal.style.display = 'none';
     document.body.style.overflow = 'auto';
 }
 
@@ -711,7 +769,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.close').forEach(closeBtn => {
         closeBtn.addEventListener('click', (e) => {
             const modal = e.target.closest('.modal');
-            closeModal(modal);
+            if (modal.id === 'product-detail-modal') {
+                closeProductDetail();
+            } else {
+                closeModal(modal);
+            }
         });
     });
 
@@ -723,7 +785,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.addEventListener('click', (e) => {
         if (e.target.classList.contains('modal')) {
-            closeModal(e.target);
+            if (e.target.id === 'product-detail-modal') {
+                closeProductDetail();
+            } else {
+                closeModal(e.target);
+            }
         }
     });
 
