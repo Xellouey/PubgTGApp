@@ -1,12 +1,19 @@
 {
   "products": [
     {
-      "id": 1753619579538,
-      "name": "ada",
-      "price": 13,
-      "description": "ad",
+      "id": 1753622497860,
+      "name": "123",
+      "price": 123131,
+      "description": "3131",
+      "image": null
+    },
+    {
+      "id": 1753622917628,
+      "name": "хер",
+      "price": 123,
+      "description": "херрррр",
       "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T12:33:00.344Z"
+  "lastUpdated": "2025-07-27T13:28:52.024Z"
 }
