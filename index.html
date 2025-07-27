@@ -139,6 +139,14 @@ const GITHUB_API_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_RE
 
 // GitHub Personal Access Token (загружается из localStorage)
 let GITHUB_TOKEN = localStorage.getItem('github_token') || null;
+
+// Функция для безопасного получения токена
+function getGitHubToken() {
+    if (!GITHUB_TOKEN) {
+        GITHUB_TOKEN = localStorage.getItem('github_token');
+    }
+    return GITHUB_TOKEN;
+}
 let githubSha = null; // Для обновления файла
 
 // Состояние приложения
@@ -223,10 +231,12 @@ async function loadProducts() {
         let response = await fetch(GITHUB_API_URL);
         
         // Если не получилось и есть токен, пробуем с токеном
-        if ((response.status === 403 || response.status === 401) && GITHUB_TOKEN) {
+        const token = getGitHubToken();
+        if ((response.status === 403 || response.status === 401) && token) {
+            console.log('Пробуем с токеном после 403...');
             response = await fetch(GITHUB_API_URL, {
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`
+                    'Authorization': `token ${token}`
                 }
             });
         }
@@ -325,7 +335,9 @@ async function saveProducts() {
         localStorage.setItem('products_backup', JSON.stringify(content));
         
         // Проверяем наличие токена
-        if (!GITHUB_TOKEN) {
+        const token = getGitHubToken();
+        console.log('Проверка токена при сохранении:', token ? 'есть' : 'нет');
+        if (!token) {
             // Если нет токена, сохраняем только локально
             localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
             localStorage.setItem('products_backup', JSON.stringify(content));
@@ -337,7 +349,7 @@ async function saveProducts() {
         try {
             const getResponse = await fetch(GITHUB_API_URL, {
                 headers: {
-                    'Authorization': `token ${GITHUB_TOKEN}`
+                    'Authorization': `token ${token}`
                 }
             });
             
@@ -360,10 +372,11 @@ async function saveProducts() {
             updateData.sha = githubSha;
         }
         
+        console.log('Отправляем в GitHub с токеном:', token.substring(0, 10) + '...');
         const response = await fetch(GITHUB_API_URL, {
             method: 'PUT',
             headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Authorization': `token ${token}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(updateData)
@@ -527,6 +540,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Принудительно устанавливаем темную тему
     document.body.style.backgroundColor = '#1a1a1a';
     document.body.style.color = '#ffffff';
+    
+    // Проверяем токен при загрузке
+    console.log('GitHub токен при загрузке:', GITHUB_TOKEN ? 'настроен' : 'не настроен');
     
     // Загружаем товары при старте
     loadProducts();
@@ -759,7 +775,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     githubTokenBtn.addEventListener('click', () => {
         adminContextMenu.classList.add('hidden');
-        document.getElementById('token-status').textContent = GITHUB_TOKEN ? '✅ Токен настроен' : '❌ Токен не настроен';
+        const status = GITHUB_TOKEN ? '✅ Токен настроен' : '❌ Токен не настроен';
+        document.getElementById('token-status').textContent = status;
+        console.log('Статус токена при открытии модала:', status);
         openModal(githubTokenModal);
     });
 
@@ -778,12 +796,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (testResponse.ok) {
                     GITHUB_TOKEN = token;
                     localStorage.setItem('github_token', token);
+                    console.log('Токен сохранен в localStorage:', token.substring(0, 10) + '...');
                     closeModal(githubTokenModal);
                     githubTokenForm.reset();
                     showToast('✅ Токен сохранен!', 'success');
                     // Перезагружаем товары с новым токеном
                     await loadProducts();
                 } else {
+                    console.log('Токен невалидный, статус:', testResponse.status);
                     showToast('❌ Неверный токен!', 'error');
                 }
             } catch (error) {
