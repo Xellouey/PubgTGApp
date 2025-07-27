@@ -234,19 +234,24 @@ window.handleAdminClick = function() {
 
 // Загрузка товаров из GitHub
 async function loadProducts() {
+    console.log('🔄 Начинаем загрузку товаров...');
+    
     try {
         // Сначала пробуем публичное чтение
+        console.log('📡 Запрос к GitHub API:', GITHUB_API_URL);
         let response = await fetch(GITHUB_API_URL);
+        console.log('📡 Ответ GitHub API:', response.status, response.statusText);
         
         // Если не получилось и есть токен, пробуем с токеном
         const token = getGitHubToken();
         if ((response.status === 403 || response.status === 401 || response.status === 404) && token) {
-            console.log('Пробуем с токеном, статус:', response.status);
+            console.log('🔑 Пробуем с токеном, статус:', response.status);
             response = await fetch(GITHUB_API_URL, {
                 headers: {
                     'Authorization': `token ${token}`
                 }
             });
+            console.log('🔑 Ответ с токеном:', response.status, response.statusText);
             
             // Если токен не работает, показываем ошибку только админам
             if ((response.status === 401 || response.status === 403) && isAdmin) {
@@ -263,22 +268,31 @@ async function loadProducts() {
             const decodedContent = decodeURIComponent(escape(atob(base64Content)));
             const content = JSON.parse(decodedContent);
             products = content.products || [];
+            console.log('✅ Товары загружены:', products.length, 'шт.');
         } else if (response.status === 404) {
             githubSha = null;
             products = [];
+            console.log('📁 Файл товаров не найден (404)');
             // Показываем ошибку только если это не первая загрузка
             if (isAdmin) {
                 showToast('📁 Файл товаров не найден', 'info');
             }
+        } else if (response.status === 403) {
+            products = [];
+            console.log('🚫 API лимит превышен или нет доступа (403)');
+            showToast('⚠️ Превышен лимит GitHub API или нет доступа', 'error');
         } else {
             products = [];
-            console.log('Ошибка загрузки:', response.status, response.statusText);
+            console.log('❌ Ошибка загрузки:', response.status, response.statusText);
+            showToast(`❌ Ошибка загрузки: ${response.status}`, 'error');
         }
     } catch (error) {
         products = [];
-        console.log('Ошибка сети:', error);
+        console.log('❌ Ошибка сети:', error);
+        showToast('❌ Ошибка сети при загрузке товаров', 'error');
     }
     
+    console.log('🎯 Финальный список товаров:', products);
     renderProducts();
 }
 
@@ -371,7 +385,10 @@ async function saveProducts() {
 
 // Отображение товаров
 function renderProducts() {
+    console.log('🎨 Рендерим товары, количество:', products.length);
+    
     if (products.length === 0) {
+        console.log('📦 Товаров нет, показываем пустое состояние');
         productsContainer.innerHTML = `
             <div class="empty-state">
                 <h2>🛍️ Магазин пуст</h2>
