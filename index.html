@@ -10,20 +10,53 @@
 <body>
     <div id="app">
         <header class="header">
-            <h1>Telegram Mini App</h1>
+            <h1>🎮 PUBG Store</h1>
+            <button id="admin-btn" class="admin-btn" title="Админ панель">⚙️</button>
         </header>
         
         <main class="main">
-            <div class="user-info">
-                <h2>Информация о пользователе</h2>
-                <div id="user-data"></div>
-            </div>
-            
-            <div class="actions">
-                <button id="main-button" class="btn">Главная кнопка</button>
-                <button id="close-app" class="btn btn-secondary">Закрыть приложение</button>
+            <div id="products-container" class="products-container">
+                <div class="empty-state">
+                    <h2>Магазин пуст</h2>
+                    <p>Товары появятся здесь после добавления администратором</p>
+                </div>
             </div>
         </main>
+
+        <!-- Модальное окно авторизации админа -->
+        <div id="admin-auth-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Авторизация администратора</h2>
+                <input type="password" id="admin-password" placeholder="Введите пароль">
+                <button id="auth-submit" class="btn">Войти</button>
+            </div>
+        </div>
+
+        <!-- Модальное окно добавления товара -->
+        <div id="add-product-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Добавить товар</h2>
+                <form id="product-form">
+                    <input type="text" id="product-name" placeholder="Название товара" required>
+                    <input type="number" id="product-price" placeholder="Цена" step="0.01" required>
+                    <textarea id="product-description" placeholder="Описание товара" rows="3"></textarea>
+                    <input type="file" id="product-image" accept="image/*">
+                    <div class="image-preview" id="image-preview"></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Добавить товар</button>
+                        <button type="button" class="btn btn-secondary" id="cancel-add">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Админ панель -->
+        <div id="admin-panel" class="admin-panel hidden">
+            <button id="add-product-btn" class="btn">+ Добавить товар</button>
+            <button id="logout-btn" class="btn btn-secondary">Выйти</button>
+        </div>
     </div>
     
     <script src="app.js"></script>
