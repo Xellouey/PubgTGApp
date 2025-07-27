@@ -27,7 +27,14 @@
       "price": 123,
       "description": "хуй",
       "image": null
+    },
+    {
+      "id": 1753624765627,
+      "name": "123",
+      "price": 1223,
+      "description": "У4",
+      "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T13:58:41.798Z"
+  "lastUpdated": "2025-07-27T13:59:26.430Z"
 }
