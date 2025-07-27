@@ -1,54 +1,12 @@
 {
   "products": [
     {
-      "id": 1753622497860,
-      "name": "123",
-      "price": 123131,
-      "description": "3131",
-      "image": null
-    },
-    {
-      "id": 1753622917628,
-      "name": "хер",
+      "id": 1753626210251,
+      "name": "новый",
       "price": 123,
-      "description": "херрррр",
-      "image": null
-    },
-    {
-      "id": 1753623692741,
-      "name": "йцуйу",
-      "price": 13,
-      "description": "йувйуц",
-      "image": null
-    },
-    {
-      "id": 1753624406389,
-      "name": "хуй",
-      "price": 123,
-      "description": "хуй",
-      "image": null
-    },
-    {
-      "id": 1753624765627,
-      "name": "123",
-      "price": 1223,
-      "description": "У4",
-      "image": null
-    },
-    {
-      "id": 1753624900965,
-      "name": "Окоо",
-      "price": 56565,
-      "description": "Ивив",
-      "image": null
-    },
-    {
-      "id": 1753624916008,
-      "name": "У33",
-      "price": 5959,
-      "description": "Аоар",
+      "description": "вфв",
       "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T14:01:56.809Z"
+  "lastUpdated": "2025-07-27T14:23:31.053Z"
 }
