@@ -325,6 +325,10 @@ async function loadProducts() {
 
 // Сохранение товаров в GitHub (только для админа)
 async function saveProducts() {
+    console.log('=== ВЫЗОВ saveProducts ===');
+    console.log('isAdmin:', isAdmin);
+    console.log('Количество товаров:', products.length);
+    
     if (!isAdmin) {
         console.log('Сохранение доступно только админу');
         return;
@@ -355,18 +359,26 @@ async function saveProducts() {
         
         // Получаем актуальный SHA перед сохранением
         try {
+            console.log('Получаем актуальный SHA...');
             const getResponse = await fetch(GITHUB_API_URL, {
                 headers: {
                     'Authorization': `token ${token}`
                 }
             });
             
+            console.log('Ответ при получении SHA:', getResponse.status);
+            
             if (getResponse.ok) {
                 const fileData = await getResponse.json();
                 githubSha = fileData.sha;
+                console.log('Получен SHA:', githubSha);
+            } else {
+                console.log('Не удалось получить SHA, создаем новый файл');
+                githubSha = null;
             }
         } catch (error) {
-            // Игнорируем ошибки получения SHA
+            console.error('Ошибка получения SHA:', error);
+            githubSha = null;
         }
         
         // Подготавливаем данные для GitHub
@@ -619,23 +631,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Кнопка синхронизации для админов
     const syncProductsBtn = document.getElementById('sync-products-btn');
     syncProductsBtn.addEventListener('click', async () => {
-        if (!GITHUB_TOKEN) {
+        const token = getGitHubToken();
+        if (!token) {
             showToast('⚠️ Настройте GitHub токен', 'error');
             return;
         }
         
         showToast('🔄 Синхронизируем с GitHub...', 'info');
+        console.log('=== НАЧАЛО СИНХРОНИЗАЦИИ ===');
         
         // Принудительно сохраняем текущие данные в GitHub
-        const content = {
-            products: products,
-            lastUpdated: new Date().toISOString()
-        };
-        
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-        localStorage.setItem('products_backup', JSON.stringify(content));
-        
         await saveProducts();
+        
+        console.log('=== КОНЕЦ СИНХРОНИЗАЦИИ ===');
     });
 
     // Кнопка обновления товаров (доступна всем)
