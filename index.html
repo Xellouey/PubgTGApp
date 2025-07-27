@@ -381,6 +381,8 @@ async function saveProducts() {
             githubSha = null;
         }
         
+        console.log('Подготавливаем данные для отправки...');
+        
         // Подготавливаем данные для GitHub
         const updateData = {
             message: `Update products - ${new Date().toLocaleString()}`,
@@ -390,37 +392,50 @@ async function saveProducts() {
         // Добавляем SHA только если файл уже существует
         if (githubSha) {
             updateData.sha = githubSha;
+            console.log('Добавлен SHA для обновления:', githubSha);
+        } else {
+            console.log('SHA не найден, создаем новый файл');
         }
         
         console.log('Отправляем в GitHub с токеном:', token.substring(0, 15) + '...');
         console.log('URL:', GITHUB_API_URL);
-        console.log('SHA для обновления:', githubSha);
+        console.log('Размер данных:', JSON.stringify(updateData).length, 'байт');
         
-        const response = await fetch(GITHUB_API_URL, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${token}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updateData)
-        });
+        console.log('Начинаем отправку в GitHub...');
         
-        console.log('Ответ от GitHub:', response.status, response.statusText);
-        
-        if (response.ok) {
-            const result = await response.json();
-            githubSha = result.content.sha; // Обновляем SHA для следующего обновления
-            console.log('Успешно сохранено, новый SHA:', githubSha);
-            showToast('✅ Товары синхронизированы!', 'success');
-        } else {
-            const error = await response.json().catch(() => ({ message: 'Неизвестная ошибка' }));
-            console.error('Ошибка сохранения:', error);
-            showToast(`❌ Ошибка: ${error.message}`, 'error');
+        try {
+            const response = await fetch(GITHUB_API_URL, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updateData)
+            });
+            
+            console.log('Ответ от GitHub:', response.status, response.statusText);
+            
+            if (response.ok) {
+                const result = await response.json();
+                githubSha = result.content.sha; // Обновляем SHA для следующего обновления
+                console.log('Успешно сохранено, новый SHA:', githubSha);
+                showToast('✅ Товары синхронизированы!', 'success');
+            } else {
+                const error = await response.json().catch(() => ({ message: 'Неизвестная ошибка' }));
+                console.error('Ошибка сохранения:', error);
+                showToast(`❌ Ошибка: ${error.message}`, 'error');
+            }
+        } catch (fetchError) {
+            console.error('Ошибка при отправке запроса:', fetchError);
+            showToast('❌ Ошибка сети', 'error');
         }
         
     } catch (error) {
-        showToast('❌ Ошибка сохранения', 'error', 3000);
+        console.error('Общая ошибка в saveProducts:', error);
+        showToast('❌ Ошибка сохранения', 'error');
     }
+    
+    console.log('=== КОНЕЦ saveProducts ===');
 }
 
 // Отображение товаров
