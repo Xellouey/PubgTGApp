@@ -253,8 +253,10 @@ async function loadProducts() {
             const data = await response.json();
             githubSha = data.sha; // Сохраняем SHA для обновления
             
-            // Декодируем содержимое из base64
-            const content = JSON.parse(atob(data.content.replace(/\n/g, '')));
+            // Безопасное декодирование из base64 с поддержкой Unicode
+            const base64Content = data.content.replace(/\n/g, '');
+            const decodedContent = decodeURIComponent(escape(atob(base64Content)));
+            const content = JSON.parse(decodedContent);
             const githubProducts = content.products || [];
             
             // Проверяем локальные данные
@@ -290,7 +292,9 @@ async function loadProducts() {
                 if (publicResponse.ok) {
                     const data = await publicResponse.json();
                     githubSha = data.sha;
-                    const content = JSON.parse(atob(data.content.replace(/\n/g, '')));
+                    const base64Content = data.content.replace(/\n/g, '');
+                    const decodedContent = decodeURIComponent(escape(atob(base64Content)));
+                    const content = JSON.parse(decodedContent);
                     products = content.products || [];
                     showToast('✅ Загружено', 'success');
                     renderProducts();
@@ -384,9 +388,15 @@ async function saveProducts() {
         console.log('Подготавливаем данные для отправки...');
         
         // Подготавливаем данные для GitHub
+        const jsonString = JSON.stringify(content, null, 2);
+        console.log('JSON для кодирования:', jsonString.substring(0, 200) + '...');
+        
+        // Безопасное кодирование в base64 с поддержкой Unicode
+        const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+        
         const updateData = {
             message: `Update products - ${new Date().toLocaleString()}`,
-            content: btoa(JSON.stringify(content, null, 2))
+            content: base64Content
         };
         
         // Добавляем SHA только если файл уже существует
