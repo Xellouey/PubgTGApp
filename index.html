@@ -59,6 +59,9 @@
         </div>
     </div>
     
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+    
     <script>
 // Инициализация Telegram Web App
 const tg = window.Telegram.WebApp;
@@ -79,6 +82,36 @@ let products = [];
 let productsContainer, adminBtn, adminAuthModal, addProductModal, adminPanel;
 let adminPassword, authSubmit, addProductBtn, logoutBtn, productForm;
 let imagePreview, productImage;
+
+// Функция для показа уведомлений
+function showToast(message, type = 'info', duration = 3000) {
+    const toastContainer = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+    
+    toastContainer.appendChild(toast);
+    
+    // Автоматическое удаление через заданное время
+    setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, duration);
+    
+    // Удаление по клику
+    toast.addEventListener('click', () => {
+        toast.classList.add('removing');
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    });
+}
 
 // Глобальная функция для обработки клика админа
 window.handleAdminClick = function() {
@@ -167,16 +200,20 @@ function buyProduct(productId) {
     };
 
     tg.sendData(JSON.stringify(purchaseData));
-    tg.showAlert(`Запрос на покупку "${product.name}" отправлен!`);
+    showToast(`🛒 Запрос на покупку "${product.name}" отправлен!`, 'info');
 }
 
 // Удаление товара (только для админа)
 function deleteProduct(productId) {
     if (!isAdmin) return;
     
+    const product = products.find(p => p.id === productId);
+    const productName = product ? product.name : 'товар';
+    
     products = products.filter(p => p.id !== productId);
     saveProducts();
     renderProducts();
+    showToast(`🗑️ "${productName}" удален`, 'info', 2000);
 }
 
 // Модальные окна
@@ -241,13 +278,13 @@ document.addEventListener('DOMContentLoaded', () => {
             closeModal(adminAuthModal);
             adminPassword.value = '';
             renderProducts();
-            tg.showAlert('🎉 Добро пожаловать, администратор!');
+            showToast('🎉 Добро пожаловать, администратор!', 'success');
         } else {
             adminPassword.style.animation = 'shake 0.5s ease-in-out';
             setTimeout(() => {
                 adminPassword.style.animation = '';
             }, 500);
-            tg.showAlert('❌ Неверный пароль!');
+            showToast('❌ Неверный пароль!', 'error');
         }
     });
 
@@ -256,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         adminBtn.style.opacity = '0.3';
         adminPanel.classList.add('hidden');
         renderProducts();
+        showToast('👋 Вы вышли из админ-панели', 'info', 2000);
     });
 
     addProductBtn.addEventListener('click', () => {
@@ -312,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     imagePreview.innerHTML = '';
                     submitBtn.innerHTML = originalText;
                     submitBtn.disabled = false;
-                    tg.showAlert('✅ Товар успешно добавлен!');
+                    showToast('✅ Товар успешно добавлен!', 'success');
                 }, 800);
             };
             reader.readAsDataURL(imageFile);
@@ -325,7 +363,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 productForm.reset();
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
-                tg.showAlert('✅ Товар успешно добавлен!');
+                showToast('✅ Товар успешно добавлен!', 'success');
             }, 800);
         }
     });
