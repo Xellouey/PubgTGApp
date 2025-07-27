@@ -15,13 +15,6 @@
       "image": null
     },
     {
-      "id": 1753624406389,
-      "name": "хуй",
-      "price": 123,
-      "description": "хуй",
-      "image": null
-    },
-    {
       "id": 1753624916008,
       "name": "У33",
       "price": 5959,
@@ -29,5 +22,5 @@
       "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T14:22:30.119Z"
+  "lastUpdated": "2025-07-27T14:22:31.725Z"
 }
