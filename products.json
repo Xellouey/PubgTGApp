@@ -1,13 +1,6 @@
 {
   "products": [
     {
-      "id": 1753620908904,
-      "name": "проверка",
-      "price": 123,
-      "description": "123",
-      "image": null
-    },
-    {
       "id": 1753622301445,
       "name": "123",
       "price": 1231,
@@ -29,5 +22,5 @@
       "image": null
     }
   ],
-  "lastUpdated": "2025-07-27T13:28:41.630Z"
+  "lastUpdated": "2025-07-27T13:28:44.714Z"
 }
