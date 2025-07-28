@@ -76,6 +76,25 @@ body::before {
     -webkit-text-fill-color: transparent;
     background-clip: text;
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Спиннер загрузки в header */
+.header-loading {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(74, 158, 255, 0.3);
+    border-top: 2px solid #4A9EFF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.header-loading.visible {
+    opacity: 1;
 }
 
 .header h1::after {
@@ -397,6 +416,93 @@ body::before {
 
 .product-card:hover::before {
     opacity: 1;
+}
+
+/* Скелетон-карточки для загрузки */
+.skeleton-card {
+    background: #2a2a2a !important;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid #444444 !important;
+    position: relative;
+    animation: slideUp 0.5s ease-out;
+    animation-fill-mode: both;
+}
+
+.skeleton-image {
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+}
+
+.skeleton-content {
+    padding: 16px;
+}
+
+.skeleton-title {
+    height: 18px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    animation: skeleton-loading 1.5s infinite;
+    animation-delay: 0.1s;
+}
+
+.skeleton-price {
+    height: 20px;
+    width: 60%;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    margin-bottom: 12px;
+    animation: skeleton-loading 1.5s infinite;
+    animation-delay: 0.2s;
+}
+
+.skeleton-description {
+    height: 14px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    animation: skeleton-loading 1.5s infinite;
+    animation-delay: 0.3s;
+}
+
+.skeleton-description:last-child {
+    width: 80%;
+    margin-bottom: 16px;
+}
+
+.skeleton-button {
+    height: 42px;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+    border-radius: 12px;
+    animation: skeleton-loading 1.5s infinite;
+    animation-delay: 0.4s;
+}
+
+@keyframes skeleton-loading {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Состояние загрузки */
+.loading-state {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    min-height: 200px;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .product-image {

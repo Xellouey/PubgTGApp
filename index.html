@@ -10,7 +10,10 @@
 <body>
     <div id="app">
         <header class="header">
-            <h1>🎮 PUBG Store</h1>
+            <h1>
+                🎮 PUBG Store
+                <div id="header-loading" class="header-loading"></div>
+            </h1>
             <button id="admin-btn" class="admin-btn" title="Админ панель" onclick="handleAdminClick()">⚙️</button>
         </header>
         
@@ -247,6 +250,10 @@ async function loadProducts() {
     console.log('📱 Платформа:', tg.platform);
     console.log('🌐 User Agent:', navigator.userAgent);
     
+    // Показываем индикаторы загрузки
+    showLoadingIndicators();
+    showLoadingMessage('Загружаем товары...');
+    
     try {
         // Сначала пробуем публичное чтение
         console.log('📡 Запрос к GitHub API:', GITHUB_API_URL);
@@ -294,12 +301,15 @@ async function loadProducts() {
                 content = JSON.parse(decodedContent);
             } else {
                 console.log('📄 Файл слишком большой, загружаем через download_url');
+                showLoadingMessage('Загружаем большой файл...');
+                
                 // Для больших файлов используем download_url
                 const downloadResponse = await fetch(data.download_url, {
                     cache: 'no-cache'
                 });
                 
                 if (downloadResponse.ok) {
+                    showLoadingMessage('Обрабатываем данные...');
                     const textContent = await downloadResponse.text();
                     content = JSON.parse(textContent);
                 } else {
@@ -339,6 +349,15 @@ async function loadProducts() {
     }
     
     console.log('🎯 Финальный список товаров:', products);
+    
+    // Скрываем индикаторы загрузки
+    hideLoadingIndicators();
+    
+    // Восстанавливаем обычный класс контейнера
+    if (productsContainer) {
+        productsContainer.className = 'products-container';
+    }
+    
     renderProducts();
 }
 
@@ -435,13 +454,19 @@ function renderProducts() {
     console.log('🎨 Рендерим товары, количество:', products.length);
     
     if (products.length === 0) {
-        console.log('📦 Товаров нет, показываем пустое состояние');
-        productsContainer.innerHTML = `
-            <div class="empty-state">
-                <h2>🛍️ Магазин пуст</h2>
-                <p>Товары появятся здесь после добавления администратором</p>
-            </div>
-        `;
+        // Показываем пустое состояние только если не идет загрузка
+        const headerLoading = document.getElementById('header-loading');
+        const isLoading = headerLoading && headerLoading.classList.contains('visible');
+        
+        if (!isLoading) {
+            console.log('📦 Товаров нет, показываем пустое состояние');
+            productsContainer.innerHTML = `
+                <div class="empty-state">
+                    <h2>🛍️ Магазин пуст</h2>
+                    <p>Товары появятся здесь после добавления администратором</p>
+                </div>
+            `;
+        }
         return;
     }
 
@@ -585,6 +610,143 @@ window.closeFullscreen = function() {
     document.body.style.overflow = 'auto';
 }
 
+// Функция сжатия изображений
+function compressImage(file, maxWidth = 800, maxHeight = 600, quality = 0.8) {
+    return new Promise((resolve, reject) => {
+        // Проверяем, что это изображение
+        if (!file.type.startsWith('image/')) {
+            reject(new Error('Файл не является изображением'));
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+            try {
+                // Вычисляем новые размеры с сохранением пропорций
+                let { width, height } = img;
+                
+                // Определяем коэффициент масштабирования
+                const scaleX = maxWidth / width;
+                const scaleY = maxHeight / height;
+                const scale = Math.min(scaleX, scaleY, 1); // Не увеличиваем изображение
+                
+                const newWidth = Math.round(width * scale);
+                const newHeight = Math.round(height * scale);
+                
+                canvas.width = newWidth;
+                canvas.height = newHeight;
+                
+                // Улучшаем качество рендеринга
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+                
+                // Рисуем сжатое изображение
+                ctx.drawImage(img, 0, 0, newWidth, newHeight);
+                
+                // Определяем формат вывода
+                let outputFormat = 'image/jpeg';
+                let outputQuality = quality;
+                
+                // Для PNG с прозрачностью сохраняем PNG
+                if (file.type === 'image/png') {
+                    // Проверяем наличие прозрачности
+                    const imageData = ctx.getImageData(0, 0, newWidth, newHeight);
+                    const hasTransparency = imageData.data.some((_, i) => i % 4 === 3 && imageData.data[i] < 255);
+                    
+                    if (hasTransparency) {
+                        outputFormat = 'image/png';
+                        outputQuality = undefined; // PNG не использует quality
+                    }
+                }
+                
+                // Конвертируем в base64
+                const compressedDataUrl = canvas.toDataURL(outputFormat, outputQuality);
+                
+                // Проверяем размер результата
+                const originalSize = file.size;
+                const compressedSize = Math.round((compressedDataUrl.length * 3) / 4); // Приблизительный размер base64
+                
+                console.log(`📸 Сжатие изображения: ${Math.round(originalSize/1024)}KB → ${Math.round(compressedSize/1024)}KB (${Math.round((1-compressedSize/originalSize)*100)}% экономии)`);
+                
+                resolve({
+                    dataUrl: compressedDataUrl,
+                    originalSize,
+                    compressedSize,
+                    width: newWidth,
+                    height: newHeight,
+                    format: outputFormat
+                });
+                
+            } catch (error) {
+                reject(error);
+            }
+        };
+        
+        img.onerror = () => {
+            reject(new Error('Ошибка загрузки изображения'));
+        };
+        
+        // Загружаем изображение
+        img.src = URL.createObjectURL(file);
+    });
+}
+
+// Функции индикаторов загрузки
+function showLoadingIndicators() {
+    // Показываем спиннер в header
+    const headerLoading = document.getElementById('header-loading');
+    if (headerLoading) {
+        headerLoading.classList.add('visible');
+    }
+    
+    // Показываем скелетон-карточки
+    showSkeletonCards();
+}
+
+function hideLoadingIndicators() {
+    // Скрываем спиннер в header
+    const headerLoading = document.getElementById('header-loading');
+    if (headerLoading) {
+        headerLoading.classList.remove('visible');
+    }
+}
+
+function showSkeletonCards(count = 6) {
+    if (!productsContainer) return;
+    
+    productsContainer.className = 'loading-state';
+    productsContainer.innerHTML = '';
+    
+    for (let i = 0; i < count; i++) {
+        const skeletonCard = document.createElement('div');
+        skeletonCard.className = 'skeleton-card';
+        skeletonCard.style.animationDelay = `${i * 0.1}s`;
+        
+        skeletonCard.innerHTML = `
+            <div class="skeleton-image"></div>
+            <div class="skeleton-content">
+                <div class="skeleton-title"></div>
+                <div class="skeleton-price"></div>
+                <div class="skeleton-description"></div>
+                <div class="skeleton-description"></div>
+                <div class="skeleton-button"></div>
+            </div>
+        `;
+        
+        productsContainer.appendChild(skeletonCard);
+    }
+}
+
+function showLoadingMessage(message) {
+    const headerLoading = document.getElementById('header-loading');
+    if (headerLoading) {
+        headerLoading.title = message;
+    }
+}
+
 // Детальный просмотр товара
 function showProductDetail(productId) {
     const product = products.find(p => p.id === productId);
@@ -724,16 +886,37 @@ document.addEventListener('DOMContentLoaded', () => {
         showToast('🔄 Обновлено', 'success');
     });
 
-    productImage.addEventListener('change', (e) => {
+    productImage.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                imagePreview.innerHTML = `<img src="${e.target.result}" alt="Preview">`;
-            };
-            reader.readAsDataURL(file);
+            try {
+                // Показываем индикатор загрузки
+                imagePreview.innerHTML = '<div style="text-align: center; padding: 20px; color: #888;"><div class="loading"></div><br>Сжимаем изображение...</div>';
+                
+                // Сжимаем изображение
+                const compressed = await compressImage(file);
+                
+                // Показываем превью сжатого изображения
+                imagePreview.innerHTML = `
+                    <img src="${compressed.dataUrl}" alt="Preview">
+                    <div style="margin-top: 8px; font-size: 11px; color: #888; text-align: center;">
+                        📸 ${compressed.width}×${compressed.height} | ${Math.round(compressed.compressedSize/1024)}KB
+                        ${compressed.originalSize !== compressed.compressedSize ? `(экономия ${Math.round((1-compressed.compressedSize/compressed.originalSize)*100)}%)` : ''}
+                    </div>
+                `;
+                
+                // Сохраняем сжатое изображение для использования в форме
+                e.target.compressedImage = compressed.dataUrl;
+                
+            } catch (error) {
+                console.error('Ошибка сжатия изображения:', error);
+                showToast('❌ Ошибка обработки изображения', 'error');
+                imagePreview.innerHTML = '';
+                e.target.value = ''; // Очищаем поле
+            }
         } else {
             imagePreview.innerHTML = '';
+            delete e.target.compressedImage;
         }
     });
 
@@ -761,25 +944,23 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.innerHTML = '<span class="loading"></span> Добавляем...';
         submitBtn.disabled = true;
 
-        if (imageFile) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                product.image = e.target.result;
-                products.push(product);
-                saveProducts();
-                
-                // Анимация успеха
-                setTimeout(() => {
-                    renderProducts();
-                    closeModal(addProductModal);
-                    productForm.reset();
-                    imagePreview.innerHTML = '';
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                    showToast('✅ Товар успешно добавлен!', 'success');
-                }, 800);
-            };
-            reader.readAsDataURL(imageFile);
+        if (imageFile && productImage.compressedImage) {
+            // Используем сжатое изображение
+            product.image = productImage.compressedImage;
+            products.push(product);
+            saveProducts();
+            
+            // Анимация успеха
+            setTimeout(() => {
+                renderProducts();
+                closeModal(addProductModal);
+                productForm.reset();
+                imagePreview.innerHTML = '';
+                delete productImage.compressedImage; // Очищаем сжатое изображение
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                showToast('✅ Товар успешно добавлен!', 'success');
+            }, 800);
         } else {
             setTimeout(() => {
                 products.push(product);
@@ -810,6 +991,7 @@ document.addEventListener('DOMContentLoaded', () => {
         closeModal(addProductModal);
         productForm.reset();
         imagePreview.innerHTML = '';
+        delete productImage.compressedImage; // Очищаем сжатое изображение
     });
 
     window.addEventListener('click', (e) => {
