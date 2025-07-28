@@ -809,6 +809,17 @@ body::before {
     user-select: text;
 }
 
+/* Специальный стиль для поля ссылки покупки */
+#product-buy-link {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+#product-buy-link::placeholder {
+    color: #666666 !important;
+    font-size: 13px;
+}
+
 #product-form input:focus,
 #product-form textarea:focus {
     outline: none;

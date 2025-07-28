@@ -42,6 +42,7 @@
                     <input type="text" id="product-name" placeholder="Название товара" required>
                     <input type="number" id="product-price" placeholder="Цена" step="0.01" required>
                     <textarea id="product-description" placeholder="Описание товара" rows="3"></textarea>
+                    <input type="url" id="product-buy-link" placeholder="Ссылка для покупки (https://t.me/KOZLIK_pubg_shop_bot?start=c_123456)">
                     <input type="file" id="product-image" accept="image/*">
                     <div class="image-preview" id="image-preview"></div>
                     <div class="form-actions">
@@ -485,11 +486,15 @@ function buyProduct(productId) {
     const product = products.find(p => p.id === productId);
     if (!product) return;
 
-    // Формируем параметр для бота с информацией о товаре
-    const botParameter = `buy_${product.id}_${encodeURIComponent(product.name)}_${product.price}`;
-    
-    // Ссылка на бота с параметрами
-    const botLink = `https://t.me/KOZLIK_pubg_shop_bot?start=${botParameter}`;
+    // Используем ссылку из товара, если она есть
+    let botLink;
+    if (product.buyLink && product.buyLink.trim()) {
+        botLink = product.buyLink.trim();
+    } else {
+        // Fallback: формируем параметр для бота с информацией о товаре
+        const botParameter = `buy_${product.id}_${encodeURIComponent(product.name)}_${product.price}`;
+        botLink = `https://t.me/KOZLIK_pubg_shop_bot?start=${botParameter}`;
+    }
     
     try {
         // Пытаемся открыть бота через Telegram API
@@ -504,7 +509,8 @@ function buyProduct(productId) {
                 id: product.id,
                 name: product.name,
                 price: product.price,
-                description: product.description
+                description: product.description,
+                buyLink: product.buyLink
             },
             user_id: tg.initDataUnsafe?.user?.id,
             timestamp: Date.now()
@@ -721,6 +727,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const name = document.getElementById('product-name').value;
         const price = document.getElementById('product-price').value;
         const description = document.getElementById('product-description').value;
+        const buyLink = document.getElementById('product-buy-link').value;
         const imageFile = productImage.files[0];
 
         const product = {
@@ -728,6 +735,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name,
             price: parseFloat(price),
             description,
+            buyLink: buyLink || null, // Сохраняем ссылку покупки
             image: null
         };
 
