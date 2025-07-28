@@ -87,10 +87,6 @@
                 </form>
                 <div style="margin-top: 16px; font-size: 12px;">
                     <span id="token-status">❌ Токен не настроен</span>
-                    <div style="margin-top: 8px; color: #888; font-size: 11px;">
-                        💡 Токен нужен для сохранения товаров.<br>
-                        Создайте токен на GitHub с правами на репозиторий.
-                    </div>
                 </div>
             </div>
         </div>
@@ -287,10 +283,30 @@ async function loadProducts() {
             const data = await response.json();
             githubSha = data.sha; // Сохраняем SHA для обновления
             
-            // Безопасное декодирование из base64 с поддержкой Unicode
-            const base64Content = data.content.replace(/\n/g, '');
-            const decodedContent = decodeURIComponent(escape(atob(base64Content)));
-            const content = JSON.parse(decodedContent);
+            let content;
+            
+            // Проверяем, есть ли содержимое в ответе (для небольших файлов)
+            if (data.content && data.content.trim()) {
+                console.log('📄 Загружаем содержимое из API ответа');
+                // Безопасное декодирование из base64 с поддержкой Unicode
+                const base64Content = data.content.replace(/\n/g, '');
+                const decodedContent = decodeURIComponent(escape(atob(base64Content)));
+                content = JSON.parse(decodedContent);
+            } else {
+                console.log('📄 Файл слишком большой, загружаем через download_url');
+                // Для больших файлов используем download_url
+                const downloadResponse = await fetch(data.download_url, {
+                    cache: 'no-cache'
+                });
+                
+                if (downloadResponse.ok) {
+                    const textContent = await downloadResponse.text();
+                    content = JSON.parse(textContent);
+                } else {
+                    throw new Error(`Ошибка загрузки файла: ${downloadResponse.status}`);
+                }
+            }
+            
             products = content.products || [];
             
             // Загружаем глобальный пароль админа
